@@ -20,7 +20,7 @@ try:
         epd.init()
         epd.Clear()
         
-        graphImage = Image.open("PowerPlot.png")
+        graphImage = Image.open("PowerPlot.png", mode='1')
         draw_graphImage = ImageDraw.Draw(graphImage)
         epd.display(epd.getbuffer(draw_graphImage))
         time.sleep(2)
