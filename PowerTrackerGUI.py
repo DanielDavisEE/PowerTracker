@@ -1,11 +1,6 @@
-import pygame, os, connWiFi, platform, csv, datetime
-import matplotlib.pyplot as plt
-import numpy as np
-from pygame.locals import *
+import os, connWiFi, platform, csv, datetime, time
 import UpdateData, CreateGraph
 from ReversedFile import *
-
-#Fail to create pixmap with Tk_GetPixmap in TkImgPhotoInstanceSetSize
 
 HOUSE = "flat"
 WIFI_INFO = {
@@ -19,11 +14,6 @@ WIFI_INFO = {
              "SSID": "homebase",
              "key": "tobycat12"},
 }
-WIN_WIDTH, WIN_HEIGHT = 800, 400
-WHITE = 255, 255, 255
-BLACK = 0, 0, 0
-
-ROWS, COLUMNS = 4, 2
 
 GEN_TYPES = [
     'DateTime',
@@ -100,25 +90,47 @@ class Loop():
     def __init__(self, period, loop_events):
         self.period = period
         self.loop_event_dict = loop_events
-        self.loop_count = 0
+        self.loop_count = 1
         self.running = False
+        
+        for event_period in self.loop_event_dict.keys():
+            assert event_period % self.period == 0
         
     def run(self):
         self.running = True
         while self.running:
+            time.sleep(self.period)
             for period, event in self.loop_event_dict.items():
-                if self.loop_count % self.period == 0:
+                if self.loop_count % period == 0:
                     event()
                     
             self.loop_count += 1
+        print("LOOP ENDED")
             
     def add_event(self, period, event):
+        assert type(period) is int
         self.loop_event_dict[period] = event
+        
+    def halt(self):
+        self.running = False
 
 if __name__ == "__main__":
+    
     loop_events = {
-        10000: runGUI,
-        1000 * 60 * 5: scrapeData,
-        1000 * 60 * 60 * 24: updateCode
+        1: lambda : print('loop')
+        #10: runGUI,
+        #60 * 5: scrapeData,
+        #60 * 60 * 24: updateCode
     }
-    mainloop = Loop(10000, loop_events)
+    mainloop = Loop(1, loop_events)
+    
+    def restart_and_close():
+        mainloop.halt()
+        os.system("git pull origin main")
+        time.sleep(10)
+        with open("PowerTrackerGUI.py") as f:
+            exec(f.read())
+    
+    mainloop.add_event(10, restart_and_close)
+    
+    mainloop.run()
