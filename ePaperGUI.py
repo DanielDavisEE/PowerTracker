@@ -7,6 +7,8 @@ if os.path.exists(libdir):
     
 if sys.platform == 'win32':
     DEBUG = True
+else:
+    DEBUG = False
 
 import logging
 import time
