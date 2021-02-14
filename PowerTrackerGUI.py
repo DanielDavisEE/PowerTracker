@@ -77,6 +77,6 @@ if __name__ == "__main__":
             #exec(f.read())
     
     loop_events = {
-        1: updateData,
-        10: refreshCode,
+        10: updateData,
+        60: refreshCode,
     }
