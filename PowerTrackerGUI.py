@@ -2,26 +2,6 @@ import os, connWiFi, platform, csv, datetime, time
 import UpdateData, CreateGraph
 from ReversedFile import *
 
-HOUSE = "flat"
-WIFI_INFO = {
-    "flat": {"name": "Elizabeth House Wifi",
-             "SSID": "Elizabeth House Wifi",
-             "key": "setthealarm"},
-    "oldflat": {"name": "DoBro Stinson",
-                "SSID": "DoBro Stinson",
-                "key": "Barney69"},
-    "home": {"name": "homebase",
-             "SSID": "homebase",
-             "key": "tobycat12"},
-}
-import pygame, os, connWiFi, platform, csv, datetime, ePaperGUI
-import matplotlib.pyplot as plt
-import numpy as np
-from pygame.locals import *
-import UpdateData, CreateGraph
-from ReversedFile import *
-
-
 GEN_TYPES = [
     'DateTime',
     'NIWind',
@@ -58,16 +38,13 @@ class Loop():
             init_functions = []
         
         self.period = period
-        self.loop_event_dict = loop_events
+        self.loop_event_dict = {}
         self.loop_count = 1
         self.running = False
         
         for event_period in self.loop_event_dict.keys():
             assert event_period % self.period == 0
-        self.loop_event_dict = {}
-        self.loop_count = 0
-        self.running = False
-        
+            
         for f in init_functions:
             f()
         
@@ -76,7 +53,7 @@ class Loop():
         while self.running:
             time.sleep(self.period)
             for period, event in self.loop_event_dict.items():
-                if self.loop_count % period == 0:
+                if self.loop_count % (period // self.period) == 0:
                     event()
                     
             self.loop_count += 1
@@ -91,24 +68,6 @@ class Loop():
 
 if __name__ == "__main__":
     
-    loop_events = {
-        1: lambda : print('loop')
-        #10: runGUI,
-        #60 * 5: scrapeData,
-        #60 * 60 * 24: updateCode
-    }
-    mainloop = Loop(1, loop_events)
-    
-    def restart_and_close():
-        mainloop.halt()
-        os.system("git pull origin main")
-        time.sleep(10)
-        with open("PowerTrackerGUI.py") as f:
-            exec(f.read())
-    
-    mainloop.add_event(10, restart_and_close)
-    
-    mainloop.run()
     mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper])
     
     def refreshCode():
@@ -116,8 +75,6 @@ if __name__ == "__main__":
         os.system("git pull origin main")
         time.sleep(10)
         os.system('PowerTrackerGUI.py')
-        #with open("PowerTrackerGUI.py") as f:
-            #exec(f.read())
     
     loop_events = {
         10: updateData,
