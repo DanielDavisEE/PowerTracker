@@ -52,7 +52,6 @@ def scrapeLoadData():
     driver.quit()
     
     
-    
     for row in table:
         row[0] = row[0].split(' ', maxsplit=1)[-1]
         zone = row[0]
@@ -62,16 +61,12 @@ def scrapeLoadData():
             reader = csv.reader(ReversedFile(outfile))
             try:
                 last_data_point = reader.__next__()
-                #print(last_data_point)
             except StopIteration: # The data file is empty
                 missed_data_points = 6
             else:
                 missed_data_points = missingTimeSteps(last_data_point[0], current_time)
-                #print(missed_data_points)
                 if missed_data_points < 0:
                     continue
-                #print(f"[{1}:{-1-missed_data_points if -1-missed_data_points else ''}], [{2+missed_data_points}:]")
-                #assert all(x == y for x, y in zip(last_data_point[1:-1-missed_data_points], row[2+missed_data_points:])), f'{last_data_point}\n{row}'
             
             if missed_data_points >= 0:
                 dt_current_time = datetime.strptime(current_time, '%d %b %Y %H:%M')
@@ -184,12 +179,6 @@ def scrapeGenDataSel():
     
     time.sleep(1)
     
-    # Basic load data
-    #load_summary = driver.find_element_by_xpath('//div[@class="live-data-summary"]')
-    #current_time = load_summary.find_element_by_xpath('.//time').text
-    #load = load_summary.find_element_by_xpath('.//tbody/tr[1]/td[@class="value"]').text
-
-    #power_gen_table = driver.find_element_by_xpath('//div[@class="power-generation"][1]/table/tbody')
     soup = BeautifulSoup(driver.page_source, features="html.parser")
     driver.quit()
     power_gen_table = soup.findAll(class_="power-generation")[1].table.tbody
@@ -248,16 +237,5 @@ def scrapeGenDataReq():
     return datetime.strptime(current_time, '%d %b %Y %H:%M')        
         
 if __name__ == '__main__':
-    #clearData()
-    #while True:
-        ##if input('quit? (y): ').lower() == 'y':
-            ##break
-        ##print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
-        #scrapeLoadData()
-        ##scrapeGenerationData()
-        #time1 = scrapeGenDataSel()
-        #time2 = scrapeGenDataReq()
-        #print(f'({datetime.now().strftime("%d %b %Y %H:%M")}) Selenium: {time1}, Req: {time2}')
-        #time.sleep(5 * 60)
-    #clearData()
+
     scrapeLoadData()

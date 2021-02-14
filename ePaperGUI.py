@@ -31,8 +31,8 @@ class BBox():
     def __str__(self):
         return f'Bounding Box(left: {self.left}, right: {self.right}, top: {self.top}, bottom: {self.bottom})'
     
-
-try:
+def init_ePaper():
+    global epd, font38
     
     font38 = ImageFont.truetype('Humor-Sans.ttf', 38)
     
@@ -43,8 +43,10 @@ try:
         epd.Clear()
     else:
         epd = EPD()
+
+def refresh_ePaper():
     
-    while True:
+    try:
     
         mainImage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
         graphImage = Image.open("PowerPlot.png")
@@ -85,11 +87,15 @@ try:
             draw_mainImage.save("GUIdrawImage.png")
 
     
-except IOError as e:
-    logging.info(e)
+    except IOError as e:
+        logging.info(e)
+        
     
-
-except KeyboardInterrupt:    
-    logging.info("ctrl + c:")
-    epd7in5_V2.epdconfig.module_exit()
-    exit()
+    except KeyboardInterrupt:    
+        logging.info("ctrl + c:")
+        epd7in5_V2.epdconfig.module_exit()
+        exit()
+    
+if __name__ == "__main__":
+    init_ePaper()
+    refresh_ePaper()
