@@ -4,12 +4,18 @@ picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
+    
+if sys.platform == 'win32':
+    DEBUG = True
 
 import logging
-from waveshare_epd import epd7in5_V2
 import time
 from PIL import Image, ImageDraw, ImageFont
 import traceback
+if DEBUG:
+    pass
+else:
+    from waveshare_epd import epd7in5_V2
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -17,13 +23,27 @@ EPD_WIDTH       = 800
 EPD_HEIGHT      = 480
 V_MARGIN        = 40
 
-
-class EPD():
-    def __init__(self):
-        self.width = EPD_WIDTH
-        self.height = EPD_HEIGHT
-
-        
+if DEBUG:
+    class EPD():
+        def __init__(self):
+            self.width = EPD_WIDTH
+            self.height = EPD_HEIGHT
+            
+    latest_gen_data = {
+        'DateTime': '3/01/2021 11:46',
+        'NIWind': '88',
+        'NIHydro': '759',
+        'Geothermal': '921',
+        'Gas-Coal': '0',
+        'Gas': '375',
+        'Diesel-Oil': '0',
+        'Co-Gen': '157',
+        'SIWind': '3',
+        'SIHydro': '1880'
+    }    
+    total_generation = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
+    
+    
 class BBox():
     def __init__(self, coords):
         self.left, self.top, self.right, self.bottom = coords
@@ -36,13 +56,13 @@ def init_ePaper():
     
     font38 = ImageFont.truetype('Humor-Sans.ttf', 38)
     
-    if sys.platform == 'linux':
+    if DEBUG:
+        epd = EPD()
+    else:
         epd = epd7in5_V2.EPD()
         logging.info("init and Clear")
         epd.init()
         epd.Clear()
-    else:
-        epd = EPD()
 
 def refresh_ePaper():
     
@@ -54,8 +74,8 @@ def refresh_ePaper():
         draw_mainImage = ImageDraw.Draw(mainImage)
         
         graphrect = BBox(graphImage.getbbox())
-        
-        for i, img_name in enumerate(os.listdir('Icons')):
+        icons_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Icons')
+        for i, img_name in enumerate(os.listdir(icons_path)):
             pass
             
             # Generation Block
@@ -63,7 +83,7 @@ def refresh_ePaper():
                       int(((epd.height - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
             
             # Generation Icon
-            iconImage = Image.open("Icons\\" + img_name)
+            iconImage = Image.open(os.path.join(icons_path, img_name))
             iconBBox = BBox(iconImage.getbbox())
             mainImage.paste(iconImage, coords)
             
@@ -80,11 +100,10 @@ def refresh_ePaper():
             
             draw_mainImage.text(coords_text, f'{fraction_generation:.1f}%', anchor="lm", font = font38, fill = 0)
         
-        if sys.platform == 'linux':
-            epd.display(epd.getbuffer(mainImage))
-        else:
+        if DEBUG:
             mainImage.save("GUIImage.png")
-            draw_mainImage.save("GUIdrawImage.png")
+        else:
+            epd.display(epd.getbuffer(mainImage))
 
     
     except IOError as e:
