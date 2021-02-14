@@ -17,6 +17,12 @@ EPD_WIDTH       = 800
 EPD_HEIGHT      = 480
 V_MARGIN        = 40
 
+
+class EPD():
+    def __init__(self):
+        self.width = EPD_WIDTH
+        self.height = EPD_HEIGHT
+
         
 class BBox():
     def __init__(self, coords):
@@ -29,10 +35,14 @@ class BBox():
 try:
     
     font38 = ImageFont.truetype('Humor-Sans.ttf', 38)
-    epd = epd7in5_V2.EPD()
-    logging.info("init and Clear")
-    epd.init()
-    epd.Clear()
+    
+    if sys.platform == 'linux':
+        epd = epd7in5_V2.EPD()
+        logging.info("init and Clear")
+        epd.init()
+        epd.Clear()
+    else:
+        epd = EPD()
     
     while True:
     
@@ -47,8 +57,8 @@ try:
             pass
             
             # Generation Block
-            coords = (int(((EPD_WIDTH - graphrect.right) // 2) * (i // 4) + graphrect.right), 
-                      int(((EPD_HEIGHT - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
+            coords = (int(((epd.width - graphrect.right) // 2) * (i // 4) + graphrect.right), 
+                      int(((epd.height - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
             
             # Generation Icon
             iconImage = Image.open("Icons\\" + img_name)
@@ -67,6 +77,12 @@ try:
             coords_text = (coords[0] + iconBBox.right, coords[1] + iconBBox.bottom // 2)
             
             draw_mainImage.text(coords_text, f'{fraction_generation:.1f}%', anchor="lm", font = font38, fill = 0)
+        
+        if sys.platform == 'linux':
+            epd.display(epd.getbuffer(mainImage))
+        else:
+            mainImage.save("GUIImage.png")
+            draw_mainImage.save("GUIdrawImage.png")
 
     
 except IOError as e:
