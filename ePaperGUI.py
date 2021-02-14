@@ -6,104 +6,73 @@ if os.path.exists(libdir):
     sys.path.append(libdir)
 
 import logging
-from waveshare_epd import epd7in5_V2
+#from waveshare_epd import epd7in5_V2
 import time
-from PIL import Image,ImageDraw,ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import traceback
 
 logging.basicConfig(level=logging.DEBUG)
 
-try:
-    while True:
-        epd = epd7in5_V2.EPD()
-        logging.info("init and Clear")
-        epd.init()
-        epd.Clear()
+EPD_WIDTH       = 800
+EPD_HEIGHT      = 480
+V_MARGIN        = 40
+
         
-        graphImage = Image.open("PowerPlot.png", mode='1')
-        draw_graphImage = ImageDraw.Draw(graphImage)
-        epd.display(epd.getbuffer(draw_graphImage))
-        time.sleep(2)
+class BBox():
+    def __init__(self, coords):
+        self.left, self.top, self.right, self.bottom = coords
         
-        
-    #logging.info("epd7in5b_V2 Demo")
-
-    #epd = epd7in5b_V2.EPD()
-    #logging.info("init and Clear")
-    #epd.init()
-    #epd.Clear()
-
-    #font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
-    #font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
-
-    ## Drawing on the Horizontal image
-    #logging.info("1.Drawing on the Horizontal image...")
-    #Himage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-    #Other = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-    #draw_Himage = ImageDraw.Draw(Himage)
-    #draw_other = ImageDraw.Draw(Other)
-    #draw_Himage.text((10, 0), 'hello world', font = font24, fill = 0)
-    #draw_Himage.text((10, 20), '7.5inch e-Paper', font = font24, fill = 0)
-    #draw_Himage.text((150, 0), u'微雪电子', font = font24, fill = 0)    
-    #draw_other.line((20, 50, 70, 100), fill = 0)
-    #draw_other.line((70, 50, 20, 100), fill = 0)
-    #draw_other.rectangle((20, 50, 70, 100), outline = 0)
-    #draw_other.line((165, 50, 165, 100), fill = 0)
-    #draw_Himage.line((140, 75, 190, 75), fill = 0)
-    #draw_Himage.arc((140, 50, 190, 100), 0, 360, fill = 0)
-    #draw_Himage.rectangle((80, 50, 130, 100), fill = 0)
-    #draw_Himage.chord((200, 50, 250, 100), 0, 360, fill = 0)
-    #epd.display(epd.getbuffer(Himage),epd.getbuffer(Other))
-    #time.sleep(2)
-
-    # Drawing on the Vertical image
-    #logging.info("2.Drawing on the Vertical image...")
-    #Limage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    #Limage_Other = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    #draw_Himage = ImageDraw.Draw(Limage)
-    #draw_Himage_Other = ImageDraw.Draw(Limage_Other)
-    #draw_Himage.text((2, 0), 'hello world', font = font18, fill = 0)
-    #draw_Himage.text((2, 20), '7.5inch epd', font = font18, fill = 0)
-    #draw_Himage_Other.text((20, 50), u'微雪电子', font = font18, fill = 0)
-    #draw_Himage_Other.line((10, 90, 60, 140), fill = 0)
-    #draw_Himage_Other.line((60, 90, 10, 140), fill = 0)
-    #draw_Himage_Other.rectangle((10, 90, 60, 140), outline = 0)
-    #draw_Himage_Other.line((95, 90, 95, 140), fill = 0)
-    #draw_Himage.line((70, 115, 120, 115), fill = 0)
-    #draw_Himage.arc((70, 90, 120, 140), 0, 360, fill = 0)
-    #draw_Himage.rectangle((10, 150, 60, 200), fill = 0)
-    #draw_Himage.chord((70, 150, 120, 200), 0, 360, fill = 0)
-    #epd.display(epd.getbuffer(Limage), epd.getbuffer(Limage_Other))
-    #time.sleep(2)
-
-    #logging.info("3.read bmp file")
-    #Himage = Image.open(os.path.join(picdir, '7in5_V2_r.bmp'))
-    #Himage_Other = Image.open(os.path.join(picdir, '7in5_V2_b.bmp'))
-    #epd.display(epd.getbuffer(Himage),epd.getbuffer(Himage_Other))
-    #time.sleep(2)
-
-    #logging.info("4.read bmp file on window")
-    #Himage2 = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    #Himage2_Other = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    #bmp = Image.open(os.path.join(picdir, '100x100.bmp'))
-    #Himage2.paste(bmp, (50,10))
-    #Himage2_Other.paste(bmp, (50,300))
-    #epd.display(epd.getbuffer(Himage2), epd.getbuffer(Himage2_Other))
-    #time.sleep(2)
-
-    #logging.info("Clear...")
-    #epd.init()
-    #epd.Clear()
-
-    #logging.info("Goto Sleep...")
-    #epd.sleep()
-    #time.sleep(3)
+    def __str__(self):
+        return f'Bounding Box(left: {self.left}, right: {self.right}, top: {self.top}, bottom: {self.bottom})'
     
-    #epd.Dev_exit()
+
+try:
+    
+    font38 = ImageFont.truetype('Humor-Sans.ttf', 38)
+    epd = epd7in5_V2.EPD()
+    logging.info("init and Clear")
+    epd.init()
+    epd.Clear()
+    
+    while True:
+    
+        mainImage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+        graphImage = Image.open("PowerPlot.png")
+        mainImage.paste(graphImage, (0, V_MARGIN))
+        draw_mainImage = ImageDraw.Draw(mainImage)
+        
+        graphrect = BBox(graphImage.getbbox())
+        
+        for i, img_name in enumerate(os.listdir('Icons')):
+            pass
+            
+            # Generation Block
+            coords = (int(((EPD_WIDTH - graphrect.right) // 2) * (i // 4) + graphrect.right), 
+                      int(((EPD_HEIGHT - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
+            
+            # Generation Icon
+            iconImage = Image.open("Icons\\" + img_name)
+            iconBBox = BBox(iconImage.getbbox())
+            mainImage.paste(iconImage, coords)
+            
+            # Generation Value
+            gen_type = img_name.removesuffix('.png')[3:]
+            if gen_type in ('Wind', 'Hydro'):
+                mw_generation = (float(latest_gen_data['NI' + gen_type])#.removesuffix(' MW'))
+                                + float(latest_gen_data['SI' + gen_type]))#.removesuffix(' MW')))
+            else:
+                mw_generation = float(latest_gen_data[gen_type])#.removesuffix(' MW'))
+            fraction_generation = mw_generation * 100 / total_generation
+            
+            coords_text = (coords[0] + iconBBox.right, coords[1] + iconBBox.bottom // 2)
+            
+            draw_mainImage.text(coords_text, f'{fraction_generation:.1f}%', anchor="lm", font = font38, fill = 0)
+
     
 except IOError as e:
     logging.info(e)
     
+
 except KeyboardInterrupt:    
     logging.info("ctrl + c:")
     epd7in5_V2.epdconfig.module_exit()

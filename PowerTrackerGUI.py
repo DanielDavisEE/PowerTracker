@@ -7,11 +7,14 @@ from ReversedFile import *
 
 #Fail to create pixmap with Tk_GetPixmap in TkImgPhotoInstanceSetSize
 
-HOUSE = "home"
+HOUSE = "flat"
 WIFI_INFO = {
-    "flat": {"name": "DoBro Stinson",
-             "SSID": "DoBro Stinson",
-             "key": "Barney69"},
+    "flat": {"name": "Elizabeth House Wifi",
+             "SSID": "Elizabeth House Wifi",
+             "key": "setthealarm"},
+    "oldflat": {"name": "DoBro Stinson",
+                "SSID": "DoBro Stinson",
+                "key": "Barney69"},
     "home": {"name": "homebase",
              "SSID": "homebase",
              "key": "tobycat12"},
@@ -91,57 +94,31 @@ def run_powerTracker(window):
         if loop_count % scrape_period_2 == 0:
             loop_count = 0
             pass
-        
-        window.fill(WHITE)
-        
-        graph = pygame.image.load("PowerPlot.png")
-        graphrect = graph.get_rect()   
-        window.blit(graph, graphrect)
-            
-        for i, img_name in enumerate(os.listdir('Icons')):
-            
-            # Generation Block
-            coords = (int(((WIN_WIDTH - graphrect.right) // 2) * (i // 4) + graphrect.right), 
-                      int((WIN_HEIGHT // 4) * (i % 4)))
-            dimensions = (int((WIN_WIDTH - graphrect.right) // 2),
-                          int(WIN_HEIGHT // 4))
-            block = pygame.Surface(dimensions)
-            block = block.convert()
-            block.fill(WHITE)
-            
-            # Generation Icon
-            icon = pygame.image.load("Icons\\" + img_name)
-            icon_rect = icon.get_rect()
-            
-            # Generation Value
-            gen_type = img_name.removesuffix('.png')[3:]
-            if gen_type in ('Wind', 'Hydro'):
-                mw_generation = (float(latest_gen_data['NI' + gen_type])#.removesuffix(' MW'))
-                                + float(latest_gen_data['SI' + gen_type]))#.removesuffix(' MW')))
-            else:
-                mw_generation = float(latest_gen_data[gen_type])#.removesuffix(' MW'))
-                
-            fraction_generation = mw_generation * 100 / total_generation
-    
-            font = pygame.font.Font('Humor-Sans-1.0.ttf', 38)
-            centre_coords = [int(n // 2) for n in dimensions]
-            
-            text = font.render(f'{fraction_generation:.1f}%', 1, BLACK)
-            text_rect = (text.get_rect(right=dimensions[0] - 10,
-                                       centery=centre_coords[1]))          
-                    
-            block.blit(icon, icon_rect)
-            block.blit(text, text_rect)
-            
-            window.blit(block, coords)
-    
-            
-        loop_count += 1         
-        pygame.display.flip()  
-        
-    pygame.quit()
 
+
+class Loop():
+    def __init__(self, period, loop_events):
+        self.period = period
+        self.loop_event_dict = loop_events
+        self.loop_count = 0
+        self.running = False
+        
+    def run(self):
+        self.running = True
+        while self.running:
+            for period, event in self.loop_event_dict.items():
+                if self.loop_count % self.period == 0:
+                    event()
+                    
+            self.loop_count += 1
+            
+    def add_event(self, period, event):
+        self.loop_event_dict[period] = event
 
 if __name__ == "__main__":
-    window = init_powerTracker()
-    run_powerTracker(window)
+    loop_events = {
+        10000: runGUI,
+        1000 * 60 * 5: scrapeData,
+        1000 * 60 * 60 * 24: updateCode
+    }
+    mainloop = Loop(10000, loop_events)
