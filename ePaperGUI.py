@@ -47,8 +47,8 @@ if DEBUG:
     
     
 class BBox():
-    def __init__(self, coords):
-        self.left, self.top, self.right, self.bottom = coords
+    def __init__(self, image):
+        self.left, self.top, self.right, self.bottom = image.getbbox()
         
     def __str__(self):
         return f'Bounding Box(left: {self.left}, right: {self.right}, top: {self.top}, bottom: {self.bottom})'
@@ -75,7 +75,7 @@ def refresh_ePaper():
         mainImage.paste(graphImage, (0, V_MARGIN))
         draw_mainImage = ImageDraw.Draw(mainImage)
         
-        graphrect = BBox(graphImage.getbbox())
+        graphrect = BBox(graphImage)
         icons_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Icons')
         for i, img_name in enumerate(os.listdir(icons_path)):
             pass
@@ -86,7 +86,7 @@ def refresh_ePaper():
             
             # Generation Icon
             iconImage = Image.open(os.path.join(icons_path, img_name))
-            iconBBox = BBox(iconImage.getbbox())
+            iconBBox = BBox(iconImage)
             mainImage.paste(iconImage, coords)
             
             # Generation Value
@@ -111,11 +111,12 @@ def refresh_ePaper():
     except IOError as e:
         logging.info(e)
         
-    
     except KeyboardInterrupt:    
         logging.info("ctrl + c:")
-        epd7in5_V2.epdconfig.module_exit()
-        exit()
+        
+def exit_ePaper():
+    epd7in5_V2.epdconfig.module_exit()
+    exit()
     
 if __name__ == "__main__":
     init_ePaper()

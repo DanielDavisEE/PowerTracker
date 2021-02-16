@@ -30,12 +30,15 @@ def updateData():
         
     total_generation = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
     
-    ePaperGUI.refresh_ePaper
+    ePaperGUI.refresh_ePaper()
 
 class Loop():
-    def __init__(self, period, init_functions=None):
+    def __init__(self, period, init_functions=None, halt_functions=None):
         if init_functions is None:
             init_functions = []
+        if halt_functions is None:
+            halt_functions = []
+        self.halt_functions = halt_functions
         
         self.period = period
         self.loop_event_dict = {}
@@ -51,12 +54,17 @@ class Loop():
     def run(self):
         self.running = True
         while self.running:
-            time.sleep(self.period)
-            for period, event in self.loop_event_dict.items():
-                if self.loop_count % (period // self.period) == 0:
-                    event()
-                    
-            self.loop_count += 1
+            try:
+                time.sleep(self.period)
+                for period, event in self.loop_event_dict.items():
+                    if self.loop_count % (period // self.period) == 0:
+                        event()
+                        
+                self.loop_count += 1
+                
+            except KeyboardInterrupt:
+                self.halt()
+                
         print("LOOP ENDED")
             
     def add_event(self, period, event):
@@ -65,10 +73,12 @@ class Loop():
         
     def halt(self):
         self.running = False
+        for f in self.halt_functions:
+            f()
 
 if __name__ == "__main__":
     
-    mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper])
+    mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
     
     def refreshCode():
         mainloop.halt()
