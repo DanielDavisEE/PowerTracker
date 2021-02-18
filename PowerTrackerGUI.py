@@ -32,7 +32,8 @@ def updateData():
         latest_gen_data = reader.__next__()
         
     total_generation = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
-    
+
+    logging.info('refreshing screen')        
     ePaperGUI.refresh_ePaper(latest_gen_data, total_generation)
 
 class Loop():
@@ -59,20 +60,28 @@ class Loop():
         while self.running:
             try:
                 time.sleep(self.period)
-                for period, event in self.loop_event_dict.items():
+                for period, events in self.loop_event_dict.items():
                     if self.loop_count % (period // self.period) == 0:
-                        event()
+                        for event in events:
+                            event()
                         
                 self.loop_count += 1
                 
             except KeyboardInterrupt:
+                logging.info("ctrl + c:")
                 self.halt()
                 
         print("LOOP ENDED")
             
     def add_event(self, period, event):
-        assert type(period) is int
-        self.loop_event_dict[period] = event
+        assert period % self.period == 0
+        self.loop_event_dict[period] = self.loop_event_dict.get(period, []).append(event)
+            
+    def add_events(self, loop_dict):
+        for period, event in loop_dict.items():
+            assert period % self.period == 0
+            self.loop_event_dict[period] = self.loop_event_dict.get(period, [])
+            self.loop_event_dict[period].append(event)
         
     def halt(self):
         self.running = False
@@ -81,7 +90,7 @@ class Loop():
 
 if __name__ == "__main__":
     
-    mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
+    mainloop = Loop(period=10)#, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
     
     def refreshCode():
         mainloop.halt()
@@ -93,5 +102,5 @@ if __name__ == "__main__":
         10: updateData,
         #60: refreshCode,
     }
-    
+    mainloop.add_events(loop_events)
     mainloop.run()

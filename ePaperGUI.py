@@ -43,7 +43,7 @@ if DEBUG:
         'SIWind': '3',
         'SIHydro': '1880'
     }    
-    total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
+    total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data_tmp.items() if k != 'DateTime')
     
     
 class BBox():
