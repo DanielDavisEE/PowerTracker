@@ -1,5 +1,5 @@
 import os, connWiFi, platform, csv, datetime, time
-import UpdateData, CreateGraph
+import UpdateData, CreateGraph, ePaperGUI
 from ReversedFile import *
 
 GEN_TYPES = [
