@@ -105,6 +105,7 @@ def refresh_ePaper():
         if DEBUG:
             mainImage.save("GUIImage.png")
         else:
+            logging.info("displaying image")
             epd.display(epd.getbuffer(mainImage))
 
     
