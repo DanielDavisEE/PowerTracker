@@ -88,5 +88,7 @@ if __name__ == "__main__":
     
     loop_events = {
         10: updateData,
-        60: refreshCode,
+        #60: refreshCode,
     }
+    
+    mainloop.run()
