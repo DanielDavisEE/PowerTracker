@@ -31,7 +31,7 @@ if DEBUG:
             self.width = EPD_WIDTH
             self.height = EPD_HEIGHT
             
-    latest_gen_data = {
+    latest_gen_data_tmp = {
         'DateTime': '3/01/2021 11:46',
         'NIWind': '88',
         'NIHydro': '759',
@@ -43,7 +43,7 @@ if DEBUG:
         'SIWind': '3',
         'SIHydro': '1880'
     }    
-    total_generation = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
+    total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
     
     
 class BBox():
@@ -66,7 +66,7 @@ def init_ePaper():
         epd.init()
         epd.Clear()
 
-def refresh_ePaper():
+def refresh_ePaper(latest_gen_data, total_generation):
     logging.info("refreshin ePaper")
     try:
     
@@ -121,4 +121,5 @@ def exit_ePaper():
     
 if __name__ == "__main__":
     init_ePaper()
-    refresh_ePaper()
+    refresh_ePaper(latest_gen_data_tmp, total_generation_tmp)
+    

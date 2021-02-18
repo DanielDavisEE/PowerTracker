@@ -1,6 +1,7 @@
-import os, connWiFi, platform, csv, datetime, time
+import os, connWiFi, platform, csv, datetime, time, logging
 import UpdateData, CreateGraph, ePaperGUI
 from ReversedFile import *
+logging.basicConfig(level=logging.DEBUG)
 
 GEN_TYPES = [
     'DateTime',
@@ -16,12 +17,14 @@ GEN_TYPES = [
 ]
 
 def updateData():
+    logging.info('updating data')
     try:
         UpdateData.scrapeLoadData()
         UpdateData.scrapeGenDataReq()
     except:
         print(f"Error collecting data at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        
+    
+    logging.info('creating graph')        
     CreateGraph.create_graph()
     
     with open('PowerGeneration.csv', 'r') as infile:
@@ -30,7 +33,7 @@ def updateData():
         
     total_generation = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data.items() if k != 'DateTime')
     
-    ePaperGUI.refresh_ePaper()
+    ePaperGUI.refresh_ePaper(latest_gen_data, total_generation)
 
 class Loop():
     def __init__(self, period, init_functions=None, halt_functions=None):
