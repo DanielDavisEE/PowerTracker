@@ -57,7 +57,7 @@ def init_ePaper():
     global epd, font38
     
     font38 = ImageFont.truetype('Humor-Sans.ttf', 38)
-    
+    logging.info(f"running on a {sys.platform} system")
     if DEBUG:
         epd = EPD()
     else:
@@ -67,7 +67,7 @@ def init_ePaper():
         epd.Clear()
 
 def refresh_ePaper():
-    
+    logging.info("refreshin ePaper")
     try:
     
         mainImage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
