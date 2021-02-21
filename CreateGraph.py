@@ -15,7 +15,8 @@ def create_graph():
     with plt.xkcd(scale=0.4, length=200, randomness=50):
     
         current_time = datetime.now()
-        with open('PowerData\Total.csv', 'r') as infile:
+        data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'PowerData')
+        with open(os.path.join(data_path, 'Total.csv'), 'r') as infile:
             reader = csv.reader(ReversedFile(infile))
             power_data = []
             offset = 0
