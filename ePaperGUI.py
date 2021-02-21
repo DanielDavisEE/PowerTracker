@@ -66,7 +66,11 @@ def init_ePaper():
         epd.init()
         epd.Clear()
 
-def refresh_ePaper(latest_gen_data, total_generation):
+def refresh_ePaper(latest_gen_data=None, total_generation=None, debug=False):
+    if debug:
+        latest_gen_data = latest_gen_data_tmp
+        total_generation = total_generation_tmp
+        
     logging.info("refreshin ePaper")
     try:
     
@@ -104,6 +108,7 @@ def refresh_ePaper(latest_gen_data, total_generation):
         
         if DEBUG:
             mainImage.save("GUIImage.png")
+            mainImage.show()
         else:
             logging.info("displaying image")
             epd.display(epd.getbuffer(mainImage))
@@ -116,10 +121,13 @@ def refresh_ePaper(latest_gen_data, total_generation):
         logging.info("ctrl + c:")
         
 def exit_ePaper():
-    epd7in5_V2.epdconfig.module_exit()
+    if DEBUG:
+        pass
+    else:
+        epd7in5_V2.epdconfig.module_exit()
     exit()
     
 if __name__ == "__main__":
     init_ePaper()
-    refresh_ePaper(latest_gen_data_tmp, total_generation_tmp)
+    refresh_ePaper(debug=True)
     
