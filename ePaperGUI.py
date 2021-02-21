@@ -31,19 +31,19 @@ if DEBUG:
             self.width = EPD_WIDTH
             self.height = EPD_HEIGHT
             
-    latest_gen_data_tmp = {
-        'DateTime': '3/01/2021 11:46',
-        'NIWind': '88',
-        'NIHydro': '759',
-        'Geothermal': '921',
-        'Gas-Coal': '0',
-        'Gas': '375',
-        'Diesel-Oil': '0',
-        'Co-Gen': '157',
-        'SIWind': '3',
-        'SIHydro': '1880'
-    }    
-    total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data_tmp.items() if k != 'DateTime')
+latest_gen_data_tmp = {
+    'DateTime': '3/01/2021 11:46',
+    'NIWind': '88',
+    'NIHydro': '759',
+    'Geothermal': '921',
+    'Gas-Coal': '0',
+    'Gas': '375',
+    'Diesel-Oil': '0',
+    'Co-Gen': '157',
+    'SIWind': '3',
+    'SIHydro': '1880'
+}    
+total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data_tmp.items() if k != 'DateTime')
     
     
 class BBox():
