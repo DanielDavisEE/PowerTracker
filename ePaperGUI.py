@@ -84,8 +84,7 @@ def refresh_ePaper(latest_gen_data=None, total_generation=None, debug=False):
         
         graphrect = BBox(graphImage)
         icons_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Icons')
-        for i, img_name in enumerate(os.listdir(icons_path)):
-            pass
+        for i, img_name in enumerate(sorted(os.listdir(icons_path))):
             
             # Generation Block
             coords = (int(((epd.width - graphrect.right) // 2) * (i // 4) + graphrect.right), 
