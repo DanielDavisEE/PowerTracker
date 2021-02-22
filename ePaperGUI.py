@@ -14,6 +14,7 @@ import logging
 import time
 from PIL import Image, ImageDraw, ImageFont
 import traceback
+import Utilities
 if DEBUG:
     pass
 else:
@@ -52,7 +53,8 @@ class BBox():
         
     def __str__(self):
         return f'Bounding Box(left: {self.left}, right: {self.right}, top: {self.top}, bottom: {self.bottom})'
-    
+
+@print_name
 def init_ePaper():
     global epd, font38
     
@@ -66,6 +68,7 @@ def init_ePaper():
         epd.init()
         epd.Clear()
 
+@print_name
 def refresh_ePaper(latest_gen_data=None, total_generation=None, debug=False):
     if debug:
         latest_gen_data = latest_gen_data_tmp
@@ -119,7 +122,8 @@ def refresh_ePaper(latest_gen_data=None, total_generation=None, debug=False):
         
     except KeyboardInterrupt:    
         logging.info("ctrl + c:")
-        
+
+@print_name      
 def exit_ePaper():
     if DEBUG:
         pass

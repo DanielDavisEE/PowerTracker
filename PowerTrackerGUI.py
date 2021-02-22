@@ -16,6 +16,7 @@ GEN_TYPES = [
     'SIHydro'
 ]
 
+@print_name
 def updateData():
     logging.info('updating data')
     try:
@@ -35,6 +36,7 @@ def updateData():
 
     logging.info('refreshing screen')        
     ePaperGUI.refresh_ePaper(latest_gen_data, total_generation)
+
 
 class Loop():
     def __init__(self, period, init_functions=None, halt_functions=None):
