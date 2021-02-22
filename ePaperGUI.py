@@ -14,7 +14,7 @@ import logging
 import time
 from PIL import Image, ImageDraw, ImageFont
 import traceback
-import Utilities
+from Utilities import print_name
 if DEBUG:
     pass
 else:
