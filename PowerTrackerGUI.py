@@ -1,5 +1,5 @@
 import os, connWiFi, platform, csv, datetime, time, logging
-import UpdateData, CreateGraph, ePaperGUI
+import UpdateData, CreateGraph, ePaperGUI, Utilities
 from ReversedFile import *
 logging.basicConfig(level=logging.DEBUG)
 
