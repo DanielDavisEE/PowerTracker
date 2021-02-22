@@ -19,7 +19,6 @@ GEN_TYPES = [
 
 @print_name
 def updateData():
-    logging.info('updating data')
     try:
         UpdateData.scrapeLoadData()
         UpdateData.scrapeGenDataReq()
@@ -93,7 +92,7 @@ class Loop():
 
 if __name__ == "__main__":
     
-    mainloop = Loop(period=10)#, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
+    mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
     
     def refreshCode():
         mainloop.halt()
