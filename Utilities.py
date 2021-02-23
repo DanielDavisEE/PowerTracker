@@ -4,9 +4,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 def print_name(f):
     
-    def inner(*args):
+    def inner(*args, **kwargs):
     
         logging.info(f"Function call: {f.__name__}")        
-        f(*args)
+        f(*args, **kwargs)
         
     return inner
