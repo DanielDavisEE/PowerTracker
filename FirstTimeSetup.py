@@ -11,6 +11,9 @@ WIFI_INFO = {
     "home": {"name": "homebase",
              "SSID": "homebase",
              "key": "tobycat12"},
+    "homenew": {"name": "homebase2",
+                "SSID": "homebase2",
+                "key": "tobycat12"},
 }
 
 connWiFi.createNewConnection(**WIFI_INFO[HOUSE])

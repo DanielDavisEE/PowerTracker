@@ -22,6 +22,9 @@ else:
 
 logging.basicConfig(level=logging.DEBUG)
 
+pil_logger = logging.getLogger('PIL')
+pil_logger.setLevel(logging.INFO)
+
 EPD_WIDTH       = 800
 EPD_HEIGHT      = 480
 V_MARGIN        = 40
@@ -77,7 +80,7 @@ def refresh_ePaper(latest_gen_data=None, total_generation=None, debug=False):
     logging.info("refreshin ePaper")
     try:
     
-        mainImage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+        mainImage = Image.new('1', (epd.width, epd.height), 255)
         graphImage = Image.open("PowerPlot.png")
         mainImage.paste(graphImage, (0, V_MARGIN))
         draw_mainImage = ImageDraw.Draw(mainImage)

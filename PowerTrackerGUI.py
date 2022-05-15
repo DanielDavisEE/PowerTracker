@@ -1,9 +1,22 @@
 import os, connWiFi, platform, csv, datetime, time, logging
+from collections import namedtuple
+
 import UpdateData, CreateGraph, ePaperGUI
 from Utilities import print_name
 from ReversedFile import *
+
 logging.basicConfig(level=logging.DEBUG)
 
+plt_logger = logging.getLogger('matplotlib')
+plt_logger.setLevel(logging.INFO)
+
+sel_logger = logging.getLogger('selenium')
+sel_logger.setLevel(logging.INFO)
+
+req_logger = logging.getLogger('urllib3')
+req_logger.setLevel(logging.INFO)
+
+LoopEvent = namedtuple("LoopEvent", ["function", "period"])
 GEN_TYPES = [
     'DateTime',
     'NIWind',
@@ -38,8 +51,21 @@ def updateData():
     ePaperGUI.refresh_ePaper(latest_gen_data, total_generation)
 
 
+@print_name
+def refreshCode():
+    if True:
+        return
+    mainloop.halt()
+    os.system("git pull origin main")
+    time.sleep(10)
+    os.system('PowerTrackerGUI.py')
+    
+    
 class Loop():
     def __init__(self, period, init_functions=None, halt_functions=None):
+        """
+         - period: the loop period in seconds
+        """
         if init_functions is None:
             init_functions = []
         if halt_functions is None:
@@ -75,15 +101,14 @@ class Loop():
                 
         print("LOOP ENDED")
             
-    def add_event(self, period, event):
-        assert period % self.period == 0
-        self.loop_event_dict[period] = self.loop_event_dict.get(period, []).append(event)
+    def add_event(self, event):
+        assert event.period % self.period == 0
+        self.loop_event_dict[event.period] = self.loop_event_dict.get(event.period, [])
+        self.loop_event_dict[event.period].append(event.function)
             
     def add_events(self, loop_dict):
-        for period, event in loop_dict.items():
-            assert period % self.period == 0
-            self.loop_event_dict[period] = self.loop_event_dict.get(period, [])
-            self.loop_event_dict[period].append(event)
+        for event in loop_events:
+            self.add_event(event)
         
     def halt(self):
         self.running = False
@@ -92,17 +117,13 @@ class Loop():
 
 if __name__ == "__main__":
     
-    mainloop = Loop(period=10, init_functions=[ePaperGUI.init_ePaper], halt_functions=[ePaperGUI.exit_ePaper])
-    
-    def refreshCode():
-        mainloop.halt()
-        os.system("git pull origin main")
-        time.sleep(10)
-        os.system('PowerTrackerGUI.py')
+    mainloop = Loop(period=60,
+                    init_functions=[ePaperGUI.init_ePaper],
+                    halt_functions=[ePaperGUI.exit_ePaper])
     
     loop_events = {
-        10: updateData,
-        #60: refreshCode,
+        LoopEvent(updateData, 60*5),
+        LoopEvent(refreshCode, 60*60*24)
     }
     mainloop.add_events(loop_events)
     mainloop.run()
