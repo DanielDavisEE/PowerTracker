@@ -1,4 +1,4 @@
-import subprocess, platform, json
+import subprocess, platform, json, os, sys
 from datetime import datetime
 
 # '%Y-%m-%dT%H:%M:%SZ'
@@ -30,4 +30,12 @@ except FileNotFoundError:
 
 if current_date < new_date:
     # There has been a more recent commit
-    pass
+    try:
+        subprocess.run('git pull', shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(e)
+    os.execv(sys.executable, sys.argv + ['--updated'])
+    # subprocess.run('git pull https://github.com/DanielDavisEE/PowerTracker.git@main')
+    # subprocess.run([sys.executable, '-m', 'pip', 'install', '-U',
+    #                 'git+https://github.com/DanielDavisEE/PowerTracker.git@main'])
+    # os.execv(sys.executable, sys.argv + ['--updated'])

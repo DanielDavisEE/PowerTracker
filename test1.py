@@ -21,11 +21,11 @@ for f, mtime in WATCHED_FILES_MTIMES:
         #os.execv(Path(__file__).absolute(), ())
         #os.execv(sys.executable, ['python'] + sys.argv)
 """
-print('Ran')
+# print('Ran')
 # os.execv(sys.executable, sys.argv)
-os.execv(sys.executable, ['python'] + sys.argv)
-print('end')
-time.sleep(1)
+# os.execv(sys.executable, ['python'] + sys.argv)
+# print('end')
+# time.sleep(1)
 # def refreshCode():
 ##mainloop.halt()
 ##
@@ -38,3 +38,7 @@ time.sleep(1)
 ##print('Pull')
 # refreshCode()
 ##print('End')
+print('test')
+import os, sys
+
+os.execl(sys.executable, r'C:\Users\Daniel\OneDrive - University of Canterbury\Other Stuff\Code\PowerTracker\test1.py')
