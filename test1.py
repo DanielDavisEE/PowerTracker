@@ -1,12 +1,14 @@
 import time, os, sys
 from datetime import datetime
 from pathlib import Path
-#import ePaperGUI
 
-#ePaperGUI.init_ePaper()
-#ePaperGUI.refresh_ePaper(debug=True)
-#ePaperGUI.exit_ePaper()
+# import ePaperGUI
+
+# ePaperGUI.init_ePaper()
+# ePaperGUI.refresh_ePaper(debug=True)
+# ePaperGUI.exit_ePaper()
 """
+
 from os.path import getmtime
 WATCHED_FILES = os.listdir(os.getcwd())
 WATCHED_FILES_MTIMES = [(f, getmtime(f)) for f in WATCHED_FILES]
@@ -20,19 +22,19 @@ for f, mtime in WATCHED_FILES_MTIMES:
         #os.execv(sys.executable, ['python'] + sys.argv)
 """
 print('Ran')
-#os.execv(sys.executable, sys.argv)
+# os.execv(sys.executable, sys.argv)
 os.execv(sys.executable, ['python'] + sys.argv)
 print('end')
 time.sleep(1)
-#def refreshCode():
-    ##mainloop.halt()
-    ##
-    ##time.sleep(10)
-    ##print('Rerun')
-    #os.system('test1.py')
+# def refreshCode():
+##mainloop.halt()
+##
+##time.sleep(10)
+##print('Rerun')
+# os.system('test1.py')
 
-#print(f"{time.time():.2f}")
+# print(f"{time.time():.2f}")
 ##time.sleep(10)   
 ##print('Pull')
-#refreshCode()
+# refreshCode()
 ##print('End')

@@ -1,5 +1,6 @@
 import os
 
+
 class ReversedFile(object):
     def __init__(self, f, mode='r'):
         """
@@ -16,7 +17,7 @@ class ReversedFile(object):
             f = open(f)
         except TypeError:
             pass
-            #print(type(f))
+            # print(type(f))
 
         self.file = f
         self.lines = self._reversed_lines()
@@ -44,12 +45,11 @@ class ReversedFile(object):
             file.seek(here, os.SEEK_SET)
             yield file.read(delta)
 
-
     def __getattribute__(self, name):
         """ 
         Allows for the underlying file attributes to come through
 
-        """ 
+        """
         try:
             # ReversedFile attribute
             return super(ReversedFile, self).__getattribute__(name)
@@ -61,7 +61,7 @@ class ReversedFile(object):
         """ 
         Creates iterator
 
-        """ 
+        """
         return self
 
     def seek(self):
@@ -72,7 +72,7 @@ class ReversedFile(object):
         Next item in the sequence
 
         """
-        return self.lines.__next__()#.strip('\n').split(',')
+        return self.lines.__next__()  # .strip('\n').split(',')
 
     def read(self):
         """
