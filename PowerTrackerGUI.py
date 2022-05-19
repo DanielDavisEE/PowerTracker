@@ -1,9 +1,17 @@
-import os, connWiFi, platform, csv, datetime, time, logging
+import csv
+import datetime
+import logging
+import os
+import sys
+import time
 from collections import namedtuple
 
-import UpdateData, CreateGraph, ePaperGUI
+import CreateGraph
+import UpdateData
+import ePaperGUI
+from ReversedFile import ReversedFile
 from Utilities import print_name
-from ReversedFile import *
+from UpdateFiles import CheckAndUpdateFiles
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -42,7 +50,7 @@ def updateData():
     logging.info('creating graph')
     CreateGraph.create_graph()
 
-    with open('PowerGeneration.csv', 'r') as infile:
+    with open('PowerGeneration.csv', 'r', encoding='utf-8') as infile:
         reader = csv.DictReader(ReversedFile(infile), GEN_TYPES)
         latest_gen_data = reader.__next__()
 
@@ -54,12 +62,15 @@ def updateData():
 
 @print_name
 def refreshCode():
-    if True:
-        return
-    mainloop.halt()
-    os.system("git pull origin main")
-    time.sleep(10)
-    os.system('PowerTrackerGUI.py')
+    return_val = CheckAndUpdateFiles()
+    if return_val == 'upgraded':
+        logging.info('pull from repository')
+        cmds = [sys.executable, 'PowerTrackerGUI.py']
+        os.execv(cmds[0], cmds)
+    elif return_val == 'same':
+        logging.info('files already up-to-date')
+    else:
+        print(return_val)
 
 
 class Loop():
@@ -107,7 +118,7 @@ class Loop():
         self.loop_event_dict[event.period] = self.loop_event_dict.get(event.period, [])
         self.loop_event_dict[event.period].append(event.function)
 
-    def add_events(self, loop_dict):
+    def add_events(self, loop_events):
         for event in loop_events:
             self.add_event(event)
 
@@ -118,13 +129,14 @@ class Loop():
 
 
 if __name__ == "__main__":
-    mainloop = Loop(period=60,
+    minute = 60  # s
+    mainloop = Loop(period=minute,
                     init_functions=[ePaperGUI.init_ePaper],
                     halt_functions=[ePaperGUI.exit_ePaper])
 
-    loop_events = {
-        LoopEvent(updateData, 60 * 5),
-        LoopEvent(refreshCode, 60 * 60 * 24)
+    mainloop_events = {
+        LoopEvent(updateData, 5 * minute),
+        LoopEvent(refreshCode, 30 * minute)
     }
-    mainloop.add_events(loop_events)
+    mainloop.add_events(mainloop_events)
     mainloop.run()
