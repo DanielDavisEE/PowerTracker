@@ -1,11 +1,15 @@
-import time, requests, os, json, csv, random
-from bs4 import BeautifulSoup
-from ReversedFile import *
+import csv
+import json
+import requests
+import time
 from datetime import datetime, timedelta
 
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options
+
+from ReversedFile import *
 
 options = Options()
 options.headless = True
@@ -90,7 +94,7 @@ def scrapeLoadData():
 
 
 def scrapeGenerationData():
-    """ Scrape the generation capacity and output datafrom the interactive graph
+    """ Scrape the generation capacity and output data from the interactive graph
     """
     driver = webdriver.Firefox(options=options)
     driver.get('https://www.transpower.co.nz/system-operator/operational-information/generation')

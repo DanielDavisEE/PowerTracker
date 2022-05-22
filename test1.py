@@ -1,7 +1,3 @@
-import time, os, sys
-from datetime import datetime
-from pathlib import Path
-
 # import ePaperGUI
 
 # ePaperGUI.init_ePaper()
@@ -38,7 +34,11 @@ for f, mtime in WATCHED_FILES_MTIMES:
 ##print('Pull')
 # refreshCode()
 ##print('End')
-print('test')
-import os, sys
+# print('test')
 
-os.execl(sys.executable, r'C:\Users\Daniel\OneDrive - University of Canterbury\Other Stuff\Code\PowerTracker\test1.py')
+import os
+import sys
+
+print("Executing...")
+os.execl(sys.executable, r'C:\Users\Daniel\OneDrive - University of Canterbury\Other Stuff\Code\PowerTracker\test2.py')
+print('Closing.')

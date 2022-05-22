@@ -39,11 +39,12 @@ def CheckAndUpdateFiles():
         except subprocess.CalledProcessError as e:
             return e
         else:
-            os.execv(sys.executable, sys.argv)
+            # TODO Have this file run by cron and close the current process
+
+            # subprocess.run('ps aux | grep "PowerTrackerGUI"',
+            #                shell=True,
+            #                capture_output=True,
+            #                encoding='utf-8')
             return 'upgraded'
-        # subprocess.run('git pull https://github.com/DanielDavisEE/PowerTracker.git@main')
-        # subprocess.run([sys.executable, '-m', 'pip', 'install', '-U',
-        #                 'git+https://github.com/DanielDavisEE/PowerTracker.git@main'])
-        # os.execv(sys.executable, sys.argv + ['--updated'])
     else:
         return 'same'

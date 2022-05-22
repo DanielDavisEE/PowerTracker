@@ -1,9 +1,10 @@
-import csv, statistics
+import csv
+import statistics
+from datetime import datetime, timedelta
+
 import matplotlib
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import numpy as np
-from datetime import date, datetime, timedelta
+import matplotlib.pyplot as plt
 
 DAYS_IN_YEAR = 365  # days/year
 HOURS_IN_DAY = 24  # hours/day

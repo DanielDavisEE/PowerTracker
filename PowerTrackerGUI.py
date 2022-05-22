@@ -4,7 +4,9 @@ import logging
 import os
 import sys
 import time
+import math
 from collections import namedtuple
+from collections.abc import Iterable, Callable
 
 import CreateGraph
 import UpdateData
@@ -60,11 +62,13 @@ def updateData():
     ePaperGUI.refresh_ePaper(latest_gen_data, total_generation)
 
 
+# TODO Move this functionality to UpdateFiles.py
 @print_name
 def refreshCode():
     return_val = CheckAndUpdateFiles()
     if return_val == 'upgraded':
-        logging.info('pull from repository')
+        logging.info('pulled from repository')
+        mainloop.halt()
         cmds = [sys.executable, 'PowerTrackerGUI.py']
         os.execv(cmds[0], cmds)
     elif return_val == 'same':
@@ -73,39 +77,56 @@ def refreshCode():
         print(return_val)
 
 
-class Loop():
-    def __init__(self, period, init_functions=None, halt_functions=None):
+class Loop(dict):
+    def __init__(self, *, events: Iterable[LoopEvent],
+                 init_functions: Iterable = None, halt_functions: Iterable = None):
         """
-         - period: the loop period in seconds
+
+        Args:
+            events: a dictionary of loop events. The keys are event periods and the lists are the events to
+                    be triggered one those periods.
+            init_functions: a list of events to be called before the loop starts running.
+            halt_functions: a list of events to be called after the loop halts.
         """
+        super().__init__()
+
         if init_functions is None:
             init_functions = []
         if halt_functions is None:
             halt_functions = []
+        self.init_functions = init_functions
         self.halt_functions = halt_functions
 
-        self.period = period
-        self.loop_event_dict = {}
-        self.loop_count = 1
-        self.running = False
+        self._period = 60
+        self._loop_count = 0
+        self._running = False
+        self.add_events(events)
 
-        for event_period in self.loop_event_dict.keys():
-            assert event_period % self.period == 0
+    def _revise_period(self, f):
+        def inner(*args, **kwargs):
+            f(*args, **kwargs)
 
-        for f in init_functions:
-            f()
+            event_periods = self.keys()
+            self._period = math.gcd(*event_periods)
+
+        return inner
+
+    def _loop(self):
+        for period, events in self.items():
+            if (self._loop_count * self._period) % period == 0:
+                for event in events:
+                    event()
+        self._loop_count += 1
 
     def run(self):
-        self.running = True
-        while self.running:
-            try:
-                time.sleep(self.period)
-                for period, events in self.loop_event_dict.items():
-                    if self.loop_count % (period // self.period) == 0:
-                        for event in events:
-                            event()
+        for f in self.init_functions:
+            f()
 
-                self.loop_count += 1
+        self._running = True
+        while self._running:
+            try:
+                time.sleep(self._period)
+                self._loop()
 
             except KeyboardInterrupt:
                 logging.info("ctrl + c:")
@@ -113,30 +134,30 @@ class Loop():
 
         print("LOOP ENDED")
 
+    @_revise_period
     def add_event(self, event):
-        assert event.period % self.period == 0
-        self.loop_event_dict[event.period] = self.loop_event_dict.get(event.period, [])
-        self.loop_event_dict[event.period].append(event.function)
+        if not isinstance(event, LoopEvent):
+            event = LoopEvent(**event)
+        assert event.period % self._period == 0
+        self[event.period] = self.get(event.period, [])
+        self[event.period].append(event.function)
 
     def add_events(self, loop_events):
         for event in loop_events:
             self.add_event(event)
 
     def halt(self):
-        self.running = False
+        self._running = False
         for f in self.halt_functions:
             f()
 
 
 if __name__ == "__main__":
-    minute = 60  # s
-    mainloop = Loop(period=minute,
+    MINUTE = 60  # s
+    mainloop_events = {
+        LoopEvent(updateData, 5 * MINUTE),
+    }
+    mainloop = Loop(events=mainloop_events,
                     init_functions=[ePaperGUI.init_ePaper],
                     halt_functions=[ePaperGUI.exit_ePaper])
-
-    mainloop_events = {
-        LoopEvent(updateData, 5 * minute),
-        LoopEvent(refreshCode, 30 * minute)
-    }
-    mainloop.add_events(mainloop_events)
     mainloop.run()

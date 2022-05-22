@@ -1,11 +1,11 @@
-import csv, statistics
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import numpy as np
-from datetime import time
+import csv
+import statistics
 from datetime import date
 from datetime import datetime
+from datetime import time
+
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 
 
 def create_timeseries(my_day=None):
