@@ -1,6 +1,11 @@
+import json
 import os
 import platform
 import getpass
+import re
+import subprocess
+
+PREFERRED_WIFI = "homebase2"
 
 
 def createNewConnection(name=None, SSID=None, key=None):
@@ -30,22 +35,33 @@ def createNewConnection(name=None, SSID=None, key=None):
     </MSM>
 </WLANProfile>"""
     if platform.system() == "Windows":
-        command = "netsh wlan add profile filename=\"" + name + ".xml\"" + " interface=WiFi"
-        with open(name + ".xml", 'w') as file:
+        command = f'netsh wlan add profile filename="{name}.xml" interface=WiFi'
+        with open(name + ".xml", 'w', encoding='utf-8') as file:
             file.write(config)
     elif platform.system() == "Linux":
-        command = "nmcli dev wifi connect '" + SSID + "' password '" + key + "'"
-    os.system(command)
+        command = f"nmcli dev wifi connect '{SSID}' password '{key}'"
+    else:
+        raise OSError("OS is neither Windows nor Linux?")
+    subprocess.run(command,
+                   shell=True,
+                   check=True)
     if platform.system() == "Windows":
         os.remove(name + ".xml")
 
 
 def connect(name=None, SSID=None, key=None):
-    if platform.system() == "Windows":
-        command = "netsh wlan connect name=\"" + name + "\" ssid=\"" + SSID + "\" interface=WiFi"
-    elif platform.system() == "Linux":
-        command = "nmcli con up " + SSID
-    os.system(command)
+    try:
+        if platform.system() == "Windows":
+            command = f'netsh wlan connect name="{name}" ssid="{SSID}" interface=WiFi'
+        elif platform.system() == "Linux":
+            command = f"nmcli con up {SSID}"
+        subprocess.run(command,
+                       shell=True,
+                       check=True)
+    except subprocess.CalledProcessError:
+        if not key:
+            raise ValueError("Missing keyword argument 'key'.")
+        createNewConnection(name, SSID, key)
 
 
 def displayAvailableNetworks():
@@ -53,10 +69,35 @@ def displayAvailableNetworks():
         command = "netsh wlan show networks interface=WiFi"
     elif platform.system() == "Linux":
         command = "nmcli dev wifi list"
-    os.system(command)
+    subprocess.run(command,
+                   shell=True,
+                   check=True)
+
+
+def connectToKnownNetwork():
+    output = subprocess.run('iwlist wlan0 scanning | grep "ESSID:"',
+                            shell=True,
+                            check=True,
+                            capture_output=True,
+                            encoding='utf-8')
+    text = output.stdout
+    pattern = re.compile(r'ESSID:"(.*)"')
+    ssids = [re.search(pattern, n).group(1) for n in text.splitlines()]
+
+    with open("metadata/wifi_info.json", 'r', encoding='utf-8') as wifi_infile:
+        wifi_info = json.load(wifi_infile)
+    if PREFERRED_WIFI in ssids:
+        ssid = PREFERRED_WIFI
+    else:
+        for ssid in ssids:
+            if ssid in wifi_info:
+                break
+    connect(ssid, ssid, wifi_info[ssid]['key'])
 
 
 if __name__ == "__main__":
+    name = "Elizabeth House Wifi"
+    connect(name, name)
     try:
         displayAvailableNetworks()
         option = input("New connection (y/n)? ")

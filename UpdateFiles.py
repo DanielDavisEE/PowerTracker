@@ -25,12 +25,12 @@ def CheckAndUpdateFiles():
     new_date = datetime.fromisoformat(date_str[:-1])
 
     try:
-        with open('metadata', 'r', encoding='utf-8') as metadata:
-            current_date = datetime.fromisoformat(metadata.read())
+        with open('metadata/timestamp', 'r', encoding='utf-8') as timestamp:
+            current_date = datetime.fromisoformat(timestamp.read())
     except FileNotFoundError:
         current_date = datetime.min
-        with open('metadata', 'w', encoding='utf-8') as metadata:
-            metadata.write(datetime.isoformat(current_date))
+        with open('metadata/timestamp', 'w', encoding='utf-8') as timestamp:
+            timestamp.write(datetime.isoformat(current_date))
 
     if current_date < new_date:
         # There has been a more recent commit
