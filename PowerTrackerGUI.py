@@ -107,7 +107,7 @@ class Loop(dict):
 
     def _revise_period(f):
         def inner(self, *args, **kwargs):
-            f(*args, **kwargs)
+            f(self, *args, **kwargs)
 
             event_periods = self.keys()
             self._period = math.gcd(*event_periods)
