@@ -46,9 +46,9 @@ alias python=/usr/local/opt/python-3.9.0/bin/python3.9
 . ~/.bashrc
 python -V
 
-Installing ePaper dependecies
+Installing ePaper dependencies
 -----------------------------------------------------------
-
+https://www.waveshare.com/wiki/7.5inch_e-Paper_HAT?spm=a2g0o.detail.1000023.1.74fd1daepMUsXv&file=7.5inch_e-Paper_HAT
 
 
 Installing other python modules
@@ -62,3 +62,12 @@ Installing humor sans font
 -----------------------------------------------------------
 sudo apt install fonts-humor-sans
 rm ~/.cache/matplotlib -r
+
+-----------------------------------------------------------
+Previous Debug Notes:
+-----------------------------------------------------------
+If PuTTY doesn't find the hostname of the pi, find its IP using the router and ping it using command line.
+If the OS is flashed using Raspberry Pi Imager, the settings can be changed through it to allow SSH ahead of time.
+    - Otherwise use the set_fresh_pi.py script or the instructions at:
+        - https://desertbot.io/blog/headless-pi-zero-ssh-access-over-usb-windows
+        - https://forums.raspberrypi.com/viewtopic.php?t=194843
