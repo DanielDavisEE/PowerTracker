@@ -105,7 +105,6 @@ class Loop(dict):
         event_periods = self.keys()
         self._period = math.gcd(*event_periods)
 
-    @staticmethod
     def _revise_period(f):
         def inner(self, *args, **kwargs):
             f(*args, **kwargs)
