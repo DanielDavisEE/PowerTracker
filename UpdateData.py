@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options
 
@@ -19,13 +20,13 @@ illegal_characters = ['\\', '/', ':', '*', '"', '?', '<', '>', '|']
 
 def clearData():
     for file in os.listdir('PowerData'):
-        with open('PowerData\\' + file, 'w') as outfile:
+        with open('PowerData\\' + file, 'w', encoding='utf-8') as outfile:
             pass
 
-    with open('generation_data.json', 'w') as outfile:
+    with open('generation_data.json', 'w', encoding='utf-8') as outfile:
         pass
 
-    with open(f'PowerGeneration.csv', 'w', newline='') as outfile:
+    with open(f'PowerGeneration.csv', 'w', encoding='utf-8', newline='') as outfile:
         pass
 
 
@@ -60,7 +61,7 @@ def scrapeLoadData():
         zone = row[0]
         row[0] = current_time
         # print(zone, row)
-        with open(f'PowerData\{zone}.csv', 'a+', newline='') as outfile:
+        with open(f'PowerData\{zone}.csv', 'a+', encoding='utf-8', newline='') as outfile:
             reader = csv.reader(ReversedFile(outfile))
             try:
                 last_data_point = reader.__next__()
@@ -133,10 +134,11 @@ def scrapeGenerationData():
         f_driver.execute_script(scroll_nav_out_of_way)
 
     ActionChains(driver)
-    graph = driver.find_element_by_xpath('//div[@id="highcharts-0"]')
-    databars = graph.find_elements_by_xpath('./child::*[1]/*[@class="highcharts-series-group"]/child::*[3]/child::*')
-    popup = graph.find_element_by_xpath('./*[@class="highcharts-tooltip"]')
-    current_time = driver.find_element_by_xpath('//span[@class="pgen-date"]').text.removeprefix('(as at) ')
+    graph = driver.find_element(by=By.XPATH, value='//div[@id="highcharts-0"]')
+    databars = graph.find_element(by=By.XPATH,
+                                  value='./child::*[1]/*[@class="highcharts-series-group"]/child::*[3]/child::*')
+    popup = graph.find_element(by=By.XPATH, value='./*[@class="highcharts-tooltip"]')
+    current_time = driver.find_element(by=By.XPATH, value='//span[@class="pgen-date"]').text.removeprefix('(as at) ')
 
     print(f'Scraping Generation Data ({current_time})')
 
@@ -148,10 +150,10 @@ def scrapeGenerationData():
 
     for databar in databars:
 
-        hover_data = popup.find_element_by_xpath('.//tbody')
-        gen_type = hover_data.find_element_by_xpath('./tr[1]/td').text
-        capacity = hover_data.find_element_by_xpath('./tr[2]/td[2]').text
-        generating = hover_data.find_element_by_xpath('./tr[3]/td[2]').text
+        hover_data = popup.find_element(by=By.XPATH, value='.//tbody')
+        gen_type = hover_data.find_element(by=By.XPATH, value='./tr[1]/td').text
+        capacity = hover_data.find_element(by=By.XPATH, value='./tr[2]/td[2]').text
+        generating = hover_data.find_element(by=By.XPATH, value='./tr[3]/td[2]').text
         generation.append(generating)
 
         if gen_type == 'Co-Gen':
@@ -163,10 +165,10 @@ def scrapeGenerationData():
 
     driver.quit()
 
-    with open('generation_data.json', 'w') as outfile:
+    with open('generation_data.json', 'w', encoding='utf-8') as outfile:
         json.dump(Current_Generation, outfile, indent=4)
 
-    with open(f'PowerGeneration.csv', 'a+', newline='') as outfile:
+    with open('PowerGeneration.csv', 'a+', encoding='utf-8', newline='') as outfile:
         writer = csv.writer(outfile)
         writer.writerow(generation)
 
@@ -230,7 +232,7 @@ def scrapeGenDataReq():
             generation = row.find(class_='generation').text
             output_row.append(generation)
 
-    with open(f'PowerGeneration.csv', 'a+', newline='') as outfile:
+    with open('PowerGeneration.csv', 'a+', encoding='utf-8', newline='') as outfile:
         writer = csv.writer(outfile)
         writer.writerow(output_row)
 
