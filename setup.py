@@ -7,10 +7,10 @@ setup(
     name='power-tracker',
     version='1.0',
     author='Daniel Davis',
-    description='',
+    description="A Raspberry Pi based system for displaying New Zealand's national power grid data",
     long_description=long_description,
     url='https://github.com/DanielDavisEE/PowerTracker',
-    python_requires='>=3.10, <4',
+    python_requires='>=3.9, <4',
     package_dir={'': 'src'},
     packages=['power_tracker'],
     install_requires=[

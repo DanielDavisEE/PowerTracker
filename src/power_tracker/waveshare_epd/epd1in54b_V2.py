@@ -28,11 +28,13 @@
 #
 
 import logging
+
 from . import epdconfig
 
 # Display resolution
-EPD_WIDTH       = 200
-EPD_HEIGHT      = 200
+EPD_WIDTH = 200
+EPD_HEIGHT = 200
+
 
 class EPD:
     def __init__(self):
@@ -43,15 +45,14 @@ class EPD:
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
 
-
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200) 
-        epdconfig.digital_write(self.reset_pin, 0) # module reset
+        epdconfig.delay_ms(200)
+        epdconfig.digital_write(self.reset_pin, 0)  # module reset
         epdconfig.delay_ms(5)
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200)   
+        epdconfig.delay_ms(200)
 
     def send_command(self, command):
         epdconfig.digital_write(self.dc_pin, 0)
@@ -64,50 +65,50 @@ class EPD:
         epdconfig.digital_write(self.cs_pin, 0)
         epdconfig.spi_writebyte([data])
         epdconfig.digital_write(self.cs_pin, 1)
-        
+
     def ReadBusy(self):
         logging.debug("e-Paper busy")
-        while(epdconfig.digital_read(self.busy_pin) == 1):
-            epdconfig.delay_ms(100)    
+        while (epdconfig.digital_read(self.busy_pin) == 1):
+            epdconfig.delay_ms(100)
         logging.debug("e-Paper busy release")
-        
+
     def init(self):
         if (epdconfig.module_init() != 0):
             return -1
         # EPD hardware init start
         self.reset()
-        
-        self.ReadBusy()   
-        self.send_command(0x12)  #SWRESET
-        self.ReadBusy()   
 
-        self.send_command(0x01) #Driver output control      
+        self.ReadBusy()
+        self.send_command(0x12)  # SWRESET
+        self.ReadBusy()
+
+        self.send_command(0x01)  # Driver output control
         self.send_data(0xC7)
         self.send_data(0x00)
         self.send_data(0x01)
 
-        self.send_command(0x11) #data entry mode       
+        self.send_command(0x11)  # data entry mode
         self.send_data(0x01)
 
-        self.send_command(0x44) #set Ram-X address start/end position   
+        self.send_command(0x44)  # set Ram-X address start/end position
         self.send_data(0x00)
-        self.send_data(0x18)    #0x18-->(24+1)*8=200
+        self.send_data(0x18)  # 0x18-->(24+1)*8=200
 
-        self.send_command(0x45) #set Ram-Y address start/end position          
-        self.send_data(0xC7)    #0xC7-->(199+1)=200
+        self.send_command(0x45)  # set Ram-Y address start/end position
+        self.send_data(0xC7)  # 0xC7-->(199+1)=200
         self.send_data(0x00)
         self.send_data(0x00)
-        self.send_data(0x00) 
+        self.send_data(0x00)
 
-        self.send_command(0x3C) #BorderWavefrom
+        self.send_command(0x3C)  # BorderWavefrom
         self.send_data(0x05)
 
-        self.send_command(0x18) #Read built-in temperature sensor
+        self.send_command(0x18)  # Read built-in temperature sensor
         self.send_data(0x80)
 
-        self.send_command(0x4E)   # set RAM x address count to 0
+        self.send_command(0x4E)  # set RAM x address count to 0
         self.send_data(0x00)
-        self.send_command(0x4F)   # set RAM y address count to 0X199    
+        self.send_command(0x4F)  # set RAM y address count to 0X199
         self.send_data(0xC7)
         self.send_data(0x00)
         self.ReadBusy()
@@ -121,7 +122,7 @@ class EPD:
         imwidth, imheight = image_monocolor.size
         if imwidth != self.width or imheight != self.height:
             raise ValueError('Image must be same dimensions as display \
-                ({0}x{1}).' .format(self.width, self.height))
+                ({0}x{1}).'.format(self.width, self.height))
 
         pixels = image_monocolor.load()
         for y in range(self.height):
@@ -134,42 +135,40 @@ class EPD:
     def display(self, blackimage, redimage):
         # send black data
         if (blackimage != None):
-            self.send_command(0x24) # DATA_START_TRANSMISSION_1
+            self.send_command(0x24)  # DATA_START_TRANSMISSION_1
             for i in range(0, int(self.width * self.height / 8)):
                 self.send_data(blackimage[i])
-                
+
         # send red data        
         if (redimage != None):
-            self.send_command(0x26) # DATA_START_TRANSMISSION_2
+            self.send_command(0x26)  # DATA_START_TRANSMISSION_2
             for i in range(0, int(self.width * self.height / 8)):
-                self.send_data(~redimage[i])  
+                self.send_data(~redimage[i])
 
-        self.send_command(0x22) # DISPLAY_REFRESH
+        self.send_command(0x22)  # DISPLAY_REFRESH
         self.send_data(0xF7)
-        self.send_command(0x20) # DISPLAY_REFRESH
+        self.send_command(0x20)  # DISPLAY_REFRESH
         self.ReadBusy()
 
     def Clear(self):
-        self.send_command(0x24) # DATA_START_TRANSMISSION_1
+        self.send_command(0x24)  # DATA_START_TRANSMISSION_1
         for i in range(0, int(self.width * self.height / 8)):
             self.send_data(0xFF)
-            
-        self.send_command(0x26) # DATA_START_TRANSMISSION_2
+
+        self.send_command(0x26)  # DATA_START_TRANSMISSION_2
         for i in range(0, int(self.width * self.height / 8)):
             self.send_data(0x00)
 
-        self.send_command(0x22) # DISPLAY_REFRESH
+        self.send_command(0x22)  # DISPLAY_REFRESH
         self.send_data(0xF7)
-        self.send_command(0x20) # DISPLAY_REFRESH
+        self.send_command(0x20)  # DISPLAY_REFRESH
         self.ReadBusy()
 
-
     def sleep(self):
-        self.send_command(0x10) #enter deep sleep
-        self.send_data(0x01) 
+        self.send_command(0x10)  # enter deep sleep
+        self.send_data(0x01)
 
     def Dev_exit(self):
         epdconfig.module_exit()
 
 ### END OF FILE ###
-

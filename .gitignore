@@ -159,6 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-**/Dev/
+**/dev/
 **/metadata/
-**/GUIImage.png
+**/gui_image.png
+**/power_plot.png

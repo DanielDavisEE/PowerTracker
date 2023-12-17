@@ -28,11 +28,13 @@
 #
 
 import logging
+
 from . import epdconfig
 
 # Display resolution
-EPD_WIDTH       = 128
-EPD_HEIGHT      = 296
+EPD_WIDTH = 128
+EPD_HEIGHT = 296
+
 
 class EPD:
     def __init__(self):
@@ -42,37 +44,37 @@ class EPD:
         self.cs_pin = epdconfig.CS_PIN
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
-        
+
     WF_PARTIAL_2IN9 = [
-        0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x80,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x40,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0A,0x0,0x0,0x0,0x0,0x0,0x2,  
-        0x1,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x1,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x0,0x0,0x0,0x0,0x0,0x0,0x0,
-        0x22,0x22,0x22,0x22,0x22,0x22,0x0,0x0,0x0,
-        0x22,0x17,0x41,0xB0,0x32,0x36,
+        0x0, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x80, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x40, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0A, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2,
+        0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x0, 0x0, 0x0,
+        0x22, 0x17, 0x41, 0xB0, 0x32, 0x36,
     ]
 
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200) 
+        epdconfig.delay_ms(200)
         epdconfig.digital_write(self.reset_pin, 0)
         epdconfig.delay_ms(5)
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200)   
+        epdconfig.delay_ms(200)
 
     def send_command(self, command):
         epdconfig.digital_write(self.dc_pin, 0)
@@ -85,23 +87,23 @@ class EPD:
         epdconfig.digital_write(self.cs_pin, 0)
         epdconfig.spi_writebyte([data])
         epdconfig.digital_write(self.cs_pin, 1)
-        
+
     def ReadBusy(self):
         logging.debug("e-Paper busy")
-        while(epdconfig.digital_read(self.busy_pin) == 1):      #  0: idle, 1: busy
-            epdconfig.delay_ms(200) 
-        logging.debug("e-Paper busy release")  
+        while (epdconfig.digital_read(self.busy_pin) == 1):  # 0: idle, 1: busy
+            epdconfig.delay_ms(200)
+        logging.debug("e-Paper busy release")
 
     def TurnOnDisplay(self):
-        self.send_command(0x22) # DISPLAY_UPDATE_CONTROL_2
+        self.send_command(0x22)  # DISPLAY_UPDATE_CONTROL_2
         self.send_data(0xF7)
-        self.send_command(0x20) # MASTER_ACTIVATION
+        self.send_command(0x20)  # MASTER_ACTIVATION
         self.ReadBusy()
 
     def TurnOnDisplay_Partial(self):
-        self.send_command(0x22) # DISPLAY_UPDATE_CONTROL_2
+        self.send_command(0x22)  # DISPLAY_UPDATE_CONTROL_2
         self.send_data(0x0F)
-        self.send_command(0x20) # MASTER_ACTIVATION
+        self.send_command(0x20)  # MASTER_ACTIVATION
         self.ReadBusy()
 
     def SendLut(self):
@@ -111,50 +113,50 @@ class EPD:
         self.ReadBusy()
 
     def SetWindow(self, x_start, y_start, x_end, y_end):
-        self.send_command(0x44) # SET_RAM_X_ADDRESS_START_END_POSITION
+        self.send_command(0x44)  # SET_RAM_X_ADDRESS_START_END_POSITION
         # x point must be the multiple of 8 or the last 3 bits will be ignored
-        self.send_data((x_start>>3) & 0xFF)
-        self.send_data((x_end>>3) & 0xFF)
-        self.send_command(0x45) # SET_RAM_Y_ADDRESS_START_END_POSITION
+        self.send_data((x_start >> 3) & 0xFF)
+        self.send_data((x_end >> 3) & 0xFF)
+        self.send_command(0x45)  # SET_RAM_Y_ADDRESS_START_END_POSITION
         self.send_data(y_start & 0xFF)
         self.send_data((y_start >> 8) & 0xFF)
         self.send_data(y_end & 0xFF)
         self.send_data((y_end >> 8) & 0xFF)
 
     def SetCursor(self, x, y):
-        self.send_command(0x4E) # SET_RAM_X_ADDRESS_COUNTER
+        self.send_command(0x4E)  # SET_RAM_X_ADDRESS_COUNTER
         # x point must be the multiple of 8 or the last 3 bits will be ignored
         self.send_data(x & 0xFF)
-        
-        self.send_command(0x4F) # SET_RAM_Y_ADDRESS_COUNTER
+
+        self.send_command(0x4F)  # SET_RAM_Y_ADDRESS_COUNTER
         self.send_data(y & 0xFF)
         self.send_data((y >> 8) & 0xFF)
         self.ReadBusy()
-        
+
     def init(self):
         if (epdconfig.module_init() != 0):
             return -1
         # EPD hardware init start     
         self.reset()
 
-        self.ReadBusy();   
-        self.send_command(0x12);  #SWRESET
-        self.ReadBusy();   
+        self.ReadBusy();
+        self.send_command(0x12);  # SWRESET
+        self.ReadBusy();
 
-        self.send_command(0x01); #Driver output control      
+        self.send_command(0x01);  # Driver output control
         self.send_data(0x27);
         self.send_data(0x01);
         self.send_data(0x00);
-    
-        self.send_command(0x11); #data entry mode       
+
+        self.send_command(0x11);  # data entry mode
         self.send_data(0x03);
 
-        self.SetWindow(0, 0, self.width-1, self.height-1);
+        self.SetWindow(0, 0, self.width - 1, self.height - 1);
 
-        self.send_command(0x21); #  Display update control
+        self.send_command(0x21);  # Display update control
         self.send_data(0x00);
-        self.send_data(0x80);	
-    
+        self.send_data(0x80);
+
         self.SetCursor(0, 0);
         self.ReadBusy();
         # EPD hardware init end
@@ -162,104 +164,103 @@ class EPD:
 
     def getbuffer(self, image):
         # logging.debug("bufsiz = ",int(self.width/8) * self.height)
-        buf = [0xFF] * (int(self.width/8) * self.height)
+        buf = [0xFF] * (int(self.width / 8) * self.height)
         image_monocolor = image.convert('1')
         imwidth, imheight = image_monocolor.size
         pixels = image_monocolor.load()
         # logging.debug("imwidth = %d, imheight = %d",imwidth,imheight)
-        if(imwidth == self.width and imheight == self.height):
+        if (imwidth == self.width and imheight == self.height):
             logging.debug("Vertical")
             for y in range(imheight):
                 for x in range(imwidth):
                     # Set the bits for the column of pixels at the current position.
                     if pixels[x, y] == 0:
                         buf[int((x + y * self.width) / 8)] &= ~(0x80 >> (x % 8))
-        elif(imwidth == self.height and imheight == self.width):
+        elif (imwidth == self.height and imheight == self.width):
             logging.debug("Horizontal")
             for y in range(imheight):
                 for x in range(imwidth):
                     newx = y
                     newy = self.height - x - 1
                     if pixels[x, y] == 0:
-                        buf[int((newx + newy*self.width) / 8)] &= ~(0x80 >> (y % 8))
+                        buf[int((newx + newy * self.width) / 8)] &= ~(0x80 >> (y % 8))
         return buf
 
     def display(self, image):
         if (image == None):
-            return            
-        self.send_command(0x24) # WRITE_RAM
+            return
+        self.send_command(0x24)  # WRITE_RAM
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(image[i + j * int(self.width / 8)])   
+                self.send_data(image[i + j * int(self.width / 8)])
         self.TurnOnDisplay()
 
     def display_Base(self, image):
         if (image == None):
-            return   
-            
-        self.send_command(0x24) # WRITE_RAM
+            return
+
+        self.send_command(0x24)  # WRITE_RAM
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
                 self.send_data(image[i + j * int(self.width / 8)])
-                
-        self.send_command(0x26) # WRITE_RAM
+
+        self.send_command(0x26)  # WRITE_RAM
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(image[i + j * int(self.width / 8)])   
-                
+                self.send_data(image[i + j * int(self.width / 8)])
+
         self.TurnOnDisplay()
-        
+
     def display_Partial(self, image):
         if (image == None):
-            return          
+            return
 
         epdconfig.digital_write(self.reset_pin, 0)
         epdconfig.delay_ms(5)
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(10)   
-        
+        epdconfig.delay_ms(10)
+
         self.SendLut();
-        self.send_command(0x37); 
-        self.send_data(0x00);  
-        self.send_data(0x00);  
-        self.send_data(0x00);  
-        self.send_data(0x00); 
-        self.send_data(0x00);  	
-        self.send_data(0x40);  
-        self.send_data(0x00);  
-        self.send_data(0x00);   
-        self.send_data(0x00);  
+        self.send_command(0x37);
+        self.send_data(0x00);
+        self.send_data(0x00);
+        self.send_data(0x00);
+        self.send_data(0x00);
+        self.send_data(0x00);
+        self.send_data(0x40);
+        self.send_data(0x00);
+        self.send_data(0x00);
+        self.send_data(0x00);
         self.send_data(0x00);
 
-        self.send_command(0x3C); #BorderWavefrom
-        self.send_data(0x80);	
+        self.send_command(0x3C);  # BorderWavefrom
+        self.send_data(0x80);
 
-        self.send_command(0x22); 
-        self.send_data(0xC0);   
-        self.send_command(0x20); 
+        self.send_command(0x22);
+        self.send_data(0xC0);
+        self.send_command(0x20);
         self.ReadBusy();
 
         self.SetWindow(0, 0, self.width - 1, self.height - 1)
         self.SetCursor(0, 0)
-    
-        self.send_command(0x24) # WRITE_RAM
+
+        self.send_command(0x24)  # WRITE_RAM
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(image[i + j * int(self.width / 8)])   
+                self.send_data(image[i + j * int(self.width / 8)])
         self.TurnOnDisplay_Partial()
 
     def Clear(self, color):
-        self.send_command(0x24) # WRITE_RAM
+        self.send_command(0x24)  # WRITE_RAM
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(color)   
+                self.send_data(color)
         self.TurnOnDisplay()
 
     def sleep(self):
-        self.send_command(0x10) # DEEP_SLEEP_MODE
+        self.send_command(0x10)  # DEEP_SLEEP_MODE
         self.send_data(0x01)
-        
+
     def Dev_exit(self):
         epdconfig.module_exit()
 ### END OF FILE ###
-

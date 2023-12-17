@@ -1,10 +1,12 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import numpy as np
-from ReversedFile import *
+import csv
 from datetime import datetime, timedelta
-import AnalyseMonth, csv
+
+import matplotlib
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+
+from ReversedFile import *
 
 MINS_IN_HOUR = 60  # mins
 TIMESTEP = 5  # mins

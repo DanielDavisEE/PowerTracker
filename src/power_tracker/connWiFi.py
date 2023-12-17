@@ -1,7 +1,7 @@
+import getpass
 import json
 import os
 import platform
-import getpass
 import re
 import subprocess
 
@@ -43,8 +43,8 @@ def createNewConnection(name=None, SSID=None, key=None):
     else:
         raise OSError("OS is neither Windows nor Linux?")
     subprocess.run(command,
-                   shell=True,
-                   check=True)
+        shell=True,
+        check=True)
     if platform.system() == "Windows":
         os.remove(name + ".xml")
 
@@ -56,8 +56,8 @@ def connect(name=None, SSID=None, key=None):
         elif platform.system() == "Linux":
             command = f"nmcli con up {SSID}"
         subprocess.run(command,
-                       shell=True,
-                       check=True)
+            shell=True,
+            check=True)
     except subprocess.CalledProcessError:
         if not key:
             raise ValueError("Missing keyword argument 'key'.")
@@ -70,16 +70,16 @@ def displayAvailableNetworks():
     elif platform.system() == "Linux":
         command = "nmcli dev wifi list"
     subprocess.run(command,
-                   shell=True,
-                   check=True)
+        shell=True,
+        check=True)
 
 
 def connectToKnownNetwork():
     output = subprocess.run('iwlist wlan0 scanning | grep "ESSID:"',
-                            shell=True,
-                            check=True,
-                            capture_output=True,
-                            encoding='utf-8')
+        shell=True,
+        check=True,
+        capture_output=True,
+        encoding='utf-8')
     text = output.stdout
     pattern = re.compile(r'ESSID:"(.*)"')
     ssids = [re.search(pattern, n).group(1) for n in text.splitlines()]

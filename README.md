@@ -5,6 +5,7 @@
 ## Setup Instructions
 
 Download OpenSSL (https://www.openssl.org/source/) and Python
+
 In Python3.x.x/Modules/Setup, uncomment the four lines relating to SSL
 
 ### Installing OpenSSL
@@ -80,6 +81,7 @@ rm ~/.cache/matplotlib -r
 If PuTTY doesn't find the hostname of the pi, find its IP using the router and ping it using command line.
 If the OS is flashed using Raspberry Pi Imager, the settings can be changed through it to allow SSH ahead of time.
 
-- Otherwise use the set_fresh_pi.py script or the instructions at:
+Otherwise use the set_fresh_pi.py script or the instructions at:
+
 - https://desertbot.io/blog/headless-pi-zero-ssh-access-over-usb-windows
 - https://forums.raspberrypi.com/viewtopic.php?t=194843

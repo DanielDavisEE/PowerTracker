@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
@@ -12,9 +12,7 @@ else:
     DEBUG = False
 
 import logging
-import time
 from PIL import Image, ImageDraw, ImageFont
-import traceback
 from Utilities import print_name
 
 # TODO Tidy up this file. Create EPD Subclass?

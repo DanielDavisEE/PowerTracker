@@ -28,11 +28,13 @@
 #
 
 import logging
+
 from . import epdconfig
 
 # Display resolution
-EPD_WIDTH       = 152
-EPD_HEIGHT      = 296
+EPD_WIDTH = 152
+EPD_HEIGHT = 296
+
 
 class EPD:
     def __init__(self):
@@ -42,16 +44,15 @@ class EPD:
         self.cs_pin = epdconfig.CS_PIN
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
-        
+
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200) 
+        epdconfig.delay_ms(200)
         epdconfig.digital_write(self.reset_pin, 0)
         epdconfig.delay_ms(5)
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200)   
-
+        epdconfig.delay_ms(200)
 
     def send_command(self, command):
         epdconfig.digital_write(self.dc_pin, 0)
@@ -59,95 +60,92 @@ class EPD:
         epdconfig.spi_writebyte([command])
         epdconfig.digital_write(self.cs_pin, 1)
 
-
     def send_data(self, data):
         epdconfig.digital_write(self.dc_pin, 1)
         epdconfig.digital_write(self.cs_pin, 0)
         epdconfig.spi_writebyte([data])
         epdconfig.digital_write(self.cs_pin, 1)
 
-
     def ReadBusy(self):
         logging.debug("e-Paper busy")
-        while(epdconfig.digital_read(self.busy_pin) == 1):      #  0: idle, 1: busy
-            epdconfig.delay_ms(20) 
-        logging.debug("e-Paper busy release") 
-
+        while (epdconfig.digital_read(self.busy_pin) == 1):  # 0: idle, 1: busy
+            epdconfig.delay_ms(20)
+        logging.debug("e-Paper busy release")
 
     def init(self):
         if (epdconfig.module_init() != 0):
             return -1
         # EPD hardware init start
         self.reset()
-        
+
         self.send_command(0x12)
         epdconfig.delay_ms(30)
         self.ReadBusy()
 
-        self.send_command(0x11) # setting gaet number
+        self.send_command(0x11)  # setting gaet number
         self.send_data(0x03)
-        
-        self.setWindows(0, 0, self.width-1, self.height-1)
-        
+
+        self.setWindows(0, 0, self.width - 1, self.height - 1)
+
         self.send_command(0x21)
         self.send_data(0x00)
         self.send_data(0x80)
-        
+
         self.setCursor(0, 0)
         self.ReadBusy()
 
         return 0
 
     def setWindows(self, Xstart, Ystart, Xend, Yend):
-        self.send_command(0x44); # SET_RAM_X_ADDRESS_START_END_POSITION
-        self.send_data((Xstart>>3) & 0x1F);
-        self.send_data((Xend>>3) & 0x1F);
-        
-        self.send_command(0x45); # SET_RAM_Y_ADDRESS_START_END_POSITION
+        self.send_command(0x44);  # SET_RAM_X_ADDRESS_START_END_POSITION
+        self.send_data((Xstart >> 3) & 0x1F);
+        self.send_data((Xend >> 3) & 0x1F);
+
+        self.send_command(0x45);  # SET_RAM_Y_ADDRESS_START_END_POSITION
         self.send_data(Ystart & 0xFF);
         self.send_data((Ystart >> 8) & 0x01);
         self.send_data(Yend & 0xFF);
         self.send_data((Yend >> 8) & 0x01);
 
     def setCursor(self, Xstart, Ystart):
-        self.send_command(0x4E); # SET_RAM_X_ADDRESS_COUNTER
+        self.send_command(0x4E);  # SET_RAM_X_ADDRESS_COUNTER
         self.send_data(Xstart & 0x1F);
 
-        self.send_command(0x4F); # SET_RAM_Y_ADDRESS_COUNTER
+        self.send_command(0x4F);  # SET_RAM_Y_ADDRESS_COUNTER
         self.send_data(Ystart & 0xFF);
         self.send_data((Ystart >> 8) & 0x01);
-        
+
     def turnon_display(self):
         self.send_command(0x20)
         self.ReadBusy()
 
     def getbuffer(self, image):
         # logging.debug("bufsiz = ",int(self.width/8) * self.height)
-        buf = [0xFF] * (int(self.width/8) * self.height)
+        buf = [0xFF] * (int(self.width / 8) * self.height)
         image_monocolor = image.convert('1')
         imwidth, imheight = image_monocolor.size
         pixels = image_monocolor.load()
         # logging.debug("imwidth = %d, imheight = %d",imwidth,imheight)
-        if(imwidth == self.width and imheight == self.height):
+        if (imwidth == self.width and imheight == self.height):
             logging.debug("Vertical")
             for y in range(imheight):
                 for x in range(imwidth):
                     # Set the bits for the column of pixels at the current position.
                     if pixels[x, y] == 0:
                         buf[int((x + y * self.width) / 8)] &= ~(0x80 >> (x % 8))
-        elif(imwidth == self.height and imheight == self.width):
+        elif (imwidth == self.height and imheight == self.width):
             logging.debug("Horizontal")
             for y in range(imheight):
                 for x in range(imwidth):
                     newx = y
                     newy = self.height - x - 1
                     if pixels[x, y] == 0:
-                        buf[int((newx + newy*self.width) / 8)] &= ~(0x80 >> (y % 8))
+                        buf[int((newx + newy * self.width) / 8)] &= ~(0x80 >> (y % 8))
         return buf
 
     def display(self, Blackimage, Redimage):
         if (Blackimage == None or Redimage == None):
-            return            
+            return
 
         self.send_command(0x4E)
         self.send_data(0x01)
@@ -158,37 +156,34 @@ class EPD:
         self.send_command(0x24)
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(Blackimage[i + j * int(self.width / 8)])   
+                self.send_data(Blackimage[i + j * int(self.width / 8)])
 
         self.send_command(0x26)
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(~Redimage[i + j * int(self.width / 8)]) 
-                
+                self.send_data(~Redimage[i + j * int(self.width / 8)])
+
         self.turnon_display()
-        
 
     def Clear(self):
 
         self.send_command(0x24)
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(0xff)   
+                self.send_data(0xff)
 
         self.send_command(0x26)
         for j in range(0, self.height):
             for i in range(0, int(self.width / 8)):
-                self.send_data(0x00) 
+                self.send_data(0x00)
 
         self.turnon_display()
 
-
     def sleep(self):
-        self.send_command(0X10) # DEEP_SLEEP_MODE
+        self.send_command(0X10)  # DEEP_SLEEP_MODE
         self.send_data(0x01)
 
     def Dev_exit(self):
         epdconfig.module_exit()
 
 ### END OF FILE ###
-

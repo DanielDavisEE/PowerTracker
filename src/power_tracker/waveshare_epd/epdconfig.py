@@ -27,18 +27,18 @@
 # THE SOFTWARE.
 #
 
-import os
 import logging
+import os
 import sys
 import time
 
 
 class RaspberryPi:
     # Pin definition
-    RST_PIN         = 17
-    DC_PIN          = 25
-    CS_PIN          = 8
-    BUSY_PIN        = 24
+    RST_PIN = 17
+    DC_PIN = 25
+    CS_PIN = 8
+    BUSY_PIN = 24
 
     def __init__(self):
         import spidev
@@ -88,10 +88,10 @@ class RaspberryPi:
 
 class JetsonNano:
     # Pin definition
-    RST_PIN         = 17
-    DC_PIN          = 25
-    CS_PIN          = 8
-    BUSY_PIN        = 24
+    RST_PIN = 17
+    DC_PIN = 25
+    CS_PIN = 8
+    BUSY_PIN = 24
 
     def __init__(self):
         import ctypes
@@ -152,6 +152,5 @@ else:
 
 for func in [x for x in dir(implementation) if not x.startswith('_')]:
     setattr(sys.modules[__name__], func, getattr(implementation, func))
-
 
 ### END OF FILE ###
