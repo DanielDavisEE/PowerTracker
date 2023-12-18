@@ -14,8 +14,10 @@ setup(
     package_dir={'': 'src'},
     packages=['power_tracker'],
     install_requires=[
+        'lxml',
         'requests',
         'selenium',
+        'pandas',
         'beatifulsoup4',
         'matplotlib'
     ],
