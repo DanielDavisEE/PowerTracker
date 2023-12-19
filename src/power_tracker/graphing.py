@@ -25,8 +25,10 @@ HOURS_RANGE = 12
 GRAPH_POWER_MIN = 2500
 GRAPH_POWER_MAX = 6000
 
-FONT = ImageFont.truetype('Humor-Sans.ttf', 38)
+FONT = ImageFont.truetype('xkcd-script.ttf', 38)
 V_MARGIN = 40
+
+ICONS_FOLDER = Path(__file__).parent / 'icons'
 
 
 class BBox:
@@ -54,18 +56,21 @@ def create_graph():
             power_generation_df.append((timestamp, total_power))
 
     power_generation_df = pd.DataFrame(power_generation_df, columns=['timestamp', 'power'])
-    power_generation_df.sort_values(by='timestamp').reset_index(drop=True)
+    power_generation_df = power_generation_df.sort_values(by='timestamp').reset_index(drop=True)
 
-    latest_time = datetime.fromtimestamp(latest_timestamp)
+    power_generation_df['datetime'] = power_generation_df['timestamp'].apply(datetime.fromtimestamp)
+    power_generation_df['np_datetime'] = matplotlib.dates.date2num(power_generation_df['datetime'])
+
+    # Find gaps in the data and designate them as individual lines to be plotted
+    line_starts = [0]
+    for idx in power_generation_df.index[1:]:
+        if power_generation_df.loc[idx, 'timestamp'] - power_generation_df.loc[idx - 1, 'timestamp'] > TIMESTEP * 2:
+            line_starts.append(idx)
+
+    latest_time = power_generation_df['datetime'].iat[-1]
     oldest_time = latest_time - timedelta(hours=HOURS_RANGE)
 
-    max_timesteps = (HOURS_RANGE * MINS_IN_HOUR // TIMESTEP)
     with plt.xkcd(scale=0.4, length=200, randomness=50):
-        # Plot as continuous if gap between points is less than 10 minutes?
-
-        # times = [latest_time - timedelta(minutes=i) for i in range((max_timesteps - 1) * TIMESTEP, -1, -TIMESTEP)]
-        # masked_power_data = np.ma.masked_where(np.array(power_data) < 0, power_data, copy=True)
-
         fig, ax = plt.subplots(figsize=(4, 4))
 
         locator = mdates.HourLocator(interval=3)  # minticks=3, maxticks=7)
@@ -77,17 +82,30 @@ def create_graph():
         ax.set_xlabel('')
 
         ax.set_ylim([GRAPH_POWER_MIN, GRAPH_POWER_MAX])
-        ax.set_xlim(matplotlib.dates.date2num((oldest_time, latest_time)))
+        # Add a margin either side of the time range for visibility
+        ax.set_xlim(matplotlib.dates.date2num((oldest_time - timedelta(seconds=TIMESTEP * 2),
+                                               latest_time + timedelta(seconds=TIMESTEP * 2))))
 
         plt.subplots_adjust(left=0.23, bottom=0.15, top=0.9)
-        # ax.plot(matplotlib.dates.date2num(times), masked_power_data, 'k')
 
-    plt.savefig('power_plot.png', dpi=100)
+        # Plot each line from the data based on the line starting indices from before
+        for i in range(len(line_starts)):
+            line_start = line_starts[i]
+            if i < len(line_starts) - 1:
+                line_end = line_starts[i + 1] - 1
+            else:
+                line_end = power_generation_df.index[-1]
+            line_df = power_generation_df.loc[line_start:line_end, :]
+            ax.plot('np_datetime', 'power', data=line_df, color='k')
+
+    image_path = 'tmp/power_plot.png'
+    plt.savefig(image_path, dpi=100)
+    return image_path
 
 
 def create_image():
-    create_graph()
-    graph_image = Image.open("power_plot.png")
+    graph_path = create_graph()
+    graph_image = Image.open(graph_path)
     graph_rect = BBox(graph_image)
 
     main_image = Image.new('1', (EPD_WIDTH, EPD_HEIGHT), 255)
@@ -95,38 +113,48 @@ def create_image():
     draw_main_image = ImageDraw.Draw(main_image)
 
     with open('metadata/gen_sources.txt', 'r', encoding='utf-8') as infile:
-        csv_fieldnames = infile.read().splitlines()
+        gen_sources = infile.read().splitlines()
         with open('power_data/power_totals.csv', 'r') as infile:
-            reader = csv.DictReader(ReversedFile(infile), csv_fieldnames)
+            reader = csv.DictReader(ReversedFile(infile), ['_timestamp'] + gen_sources)
+            latest_generation_data = reader.__next__()
 
-    icons_path = Path(__file__) / 'icons'
-    for i, img_name in enumerate(sorted(os.listdir(icons_path))):
+    latest_generation_data.pop('_timestamp')
+    for gen_type in latest_generation_data:
+        if latest_generation_data[gen_type]:
+            latest_generation_data[gen_type] = int(latest_generation_data[gen_type])
+        else:
+            latest_generation_data[gen_type] = 0
 
+    total_generation = sum(latest_generation_data.values())
+    gen_types_ordered = sorted(latest_generation_data.keys(), key=lambda k: latest_generation_data[k], reverse=True)
+
+    for i, gen_type in enumerate(gen_types_ordered):
         # Generation Block
         coords = (int(((EPD_WIDTH - graph_rect.right) // 2) * (i // 4) + graph_rect.right),
                   int(((EPD_HEIGHT - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
 
         # Generation Icon
-        icon_image = Image.open(os.path.join(icons_path, img_name))
+        icon_file = (ICONS_FOLDER / gen_type).with_suffix('.png')
+        if icon_file.exists():
+            icon_image = Image.open(icon_file)
+        else:
+            # As a temporary fallback, just use the first three letters
+            icon_image = Image.new('1', (100, 100), 255)
+            draw_icon_image = ImageDraw.Draw(icon_image)
+            draw_icon_image.text((20, 50), gen_type[:3], anchor="lm", font=FONT, fill=0)
+
         icon_bbox = BBox(icon_image)
         main_image.paste(icon_image, coords)
 
         # Generation Value
-        gen_type = img_name.removesuffix('.png')[3:]
-        if gen_type in ('Wind', 'Hydro'):
-            mw_generation = (float(latest_gen_data['NI' + gen_type])  # .removesuffix(' MW'))
-                             + float(latest_gen_data['SI' + gen_type]))  # .removesuffix(' MW')))
-        else:
-            mw_generation = float(latest_gen_data[gen_type])  # .removesuffix(' MW'))
-        fraction_generation = mw_generation * 100 / total_generation
+        generation = latest_generation_data[gen_type]
+        fraction_generation = generation * 100 / total_generation
 
-        coords_text = (coords[0] + icon_bbox.right, coords[1] + icon_bbox.bottom // 2)
+        text_coords = (coords[0] + icon_bbox.right, coords[1] + icon_bbox.bottom // 2)
+        draw_main_image.text(text_coords, f'{fraction_generation:.1f}%', anchor="lm", font=FONT, fill=0)
 
-        draw_main_image.text(coords_text, f'{fraction_generation:.1f}%', anchor="lm", font=FONT, fill=0)
-
-    main_image.save("tmp/screen_image.png")
+    main_image.save('tmp/screen_image.png')
 
 
 if __name__ == "__main__":
-    create_graph()
-    # plt.show()
+    create_image()

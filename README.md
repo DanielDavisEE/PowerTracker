@@ -4,6 +4,13 @@
 
 ## Setup Instructions
 
+### Flashing Raspberry PI
+
+Get the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) and flash onto the MicroSD card. Enable SSH when
+the option is presented. Follow the
+instructions [here](https://desertbot.io/blog/headless-pi-zero-ssh-access-over-usb-windows)
+to enable SSH over USB for debugging.
+
 Download OpenSSL (https://www.openssl.org/source/) and Python
 
 In Python3.x.x/Modules/Setup, uncomment the four lines relating to SSL
@@ -71,8 +78,22 @@ https://www.waveshare.com/wiki/7.5inch_e-Paper_HAT?spm=a2g0o.detail.1000023.1.74
 
 ### Installing humor sans font
 
-```cmdline
-sudo apt install fonts-humor-sans
+1. Download xkcd-script.ttf from https://github.com/ipython/xkcd-font/tree/master/xkcd-script/font
+2. Install as a system font
+3. Reset matplotlib font cache:
+
+#### Windows:
+
+```python
+import shutil
+import matplotlib
+
+shutil.rmtree(matplotlib.get_cachedir())
+```
+
+#### Linux:
+
+```bash
 rm ~/.cache/matplotlib -r
 ```
 
@@ -81,7 +102,5 @@ rm ~/.cache/matplotlib -r
 If PuTTY doesn't find the hostname of the pi, find its IP using the router and ping it using command line.
 If the OS is flashed using Raspberry Pi Imager, the settings can be changed through it to allow SSH ahead of time.
 
-Otherwise use the set_fresh_pi.py script or the instructions at:
-
-- https://desertbot.io/blog/headless-pi-zero-ssh-access-over-usb-windows
+-
 - https://forums.raspberrypi.com/viewtopic.php?t=194843
