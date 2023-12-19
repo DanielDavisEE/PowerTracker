@@ -18,7 +18,7 @@ setup(
         'requests',
         'selenium',
         'pandas',
-        'beatifulsoup4',
+        'beautifulsoup4',
         'matplotlib'
     ],
     package_data={

@@ -1,8 +1,6 @@
 import logging
 import sys
 
-from PIL import ImageFont
-
 from waveshare_epd import epd7in5_V2
 
 if sys.platform == 'win32':
