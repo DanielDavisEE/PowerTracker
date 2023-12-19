@@ -1,15 +1,14 @@
 import csv
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import matplotlib
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 
 from file_utils import *
-from pathlib import Path
 
 try:
     from waveshare_epd.epd7in5_V2 import EPD_WIDTH, EPD_HEIGHT
@@ -39,7 +38,7 @@ class BBox:
         return f'Bounding Box(left: {self.left}, right: {self.right}, top: {self.top}, bottom: {self.bottom})'
 
 
-def create_graph():
+def load_last_twelve_hours():
     power_generation_df = []
     latest_timestamp = None
     with open('power_data/power_totals.csv', 'r') as infile:
@@ -60,6 +59,12 @@ def create_graph():
 
     power_generation_df['datetime'] = power_generation_df['timestamp'].apply(datetime.fromtimestamp)
     power_generation_df['np_datetime'] = matplotlib.dates.date2num(power_generation_df['datetime'])
+
+    return power_generation_df
+
+
+def create_graph():
+    power_generation_df = load_last_twelve_hours()
 
     # Find gaps in the data and designate them as individual lines to be plotted
     line_starts = [0]
