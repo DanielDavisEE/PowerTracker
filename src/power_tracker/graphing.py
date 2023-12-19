@@ -19,11 +19,13 @@ except:
 
 SECS_IN_MIN = 60
 MINS_IN_HOUR = 60
-TIMESTEP = 5  # mins
-HOURS = 12
+TIMESTEP = 5 * SECS_IN_MIN  # secs
+HOURS_RANGE = 12
+
+GRAPH_POWER_MIN = 2500
+GRAPH_POWER_MAX = 6000
 
 FONT = ImageFont.truetype('Humor-Sans.ttf', 38)
-
 V_MARGIN = 40
 
 
@@ -40,24 +42,29 @@ def create_graph():
     latest_timestamp = None
     with open('power_data/power_totals.csv', 'r') as infile:
         reader = csv.reader(ReversedFile(infile))
-        for timestamp, *powers in reader:
+        for timestamp_str, *powers in reader:
+            timestamp = float(timestamp_str)
             if latest_timestamp is None:
                 latest_timestamp = timestamp
-            elif timestamp < latest_timestamp - HOURS * MINS_IN_HOUR * SECS_IN_MIN:
+                oldest_timestamp = latest_timestamp - HOURS_RANGE * MINS_IN_HOUR * SECS_IN_MIN
+            elif timestamp < oldest_timestamp:
                 break
 
             total_power = sum(int(value) if value != '' else 0 for value in powers)
             power_generation_df.append((timestamp, total_power))
 
     power_generation_df = pd.DataFrame(power_generation_df, columns=['timestamp', 'power'])
-    power_generation_df.sort_values(by='timestamp')
+    power_generation_df.sort_values(by='timestamp').reset_index(drop=True)
 
-    max_timesteps = (HOURS * MINS_IN_HOUR // TIMESTEP)
+    latest_time = datetime.fromtimestamp(latest_timestamp)
+    oldest_time = latest_time - timedelta(hours=HOURS_RANGE)
+
+    max_timesteps = (HOURS_RANGE * MINS_IN_HOUR // TIMESTEP)
     with plt.xkcd(scale=0.4, length=200, randomness=50):
         # Plot as continuous if gap between points is less than 10 minutes?
 
-        times = [latest_time - timedelta(minutes=i) for i in range((max_timesteps - 1) * TIMESTEP, -1, -TIMESTEP)]
-        masked_power_data = np.ma.masked_where(np.array(power_data) < 0, power_data, copy=True)
+        # times = [latest_time - timedelta(minutes=i) for i in range((max_timesteps - 1) * TIMESTEP, -1, -TIMESTEP)]
+        # masked_power_data = np.ma.masked_where(np.array(power_data) < 0, power_data, copy=True)
 
         fig, ax = plt.subplots(figsize=(4, 4))
 
@@ -69,12 +76,11 @@ def create_graph():
         ax.set_ylabel('Power (MW)')
         ax.set_xlabel('')
 
-        # TODO: Don't hardcode limits
-        ax.set_ylim([2500, 6000])
-        ax.set_xlim(matplotlib.dates.date2num((times[0], times[-1])))
+        ax.set_ylim([GRAPH_POWER_MIN, GRAPH_POWER_MAX])
+        ax.set_xlim(matplotlib.dates.date2num((oldest_time, latest_time)))
 
         plt.subplots_adjust(left=0.23, bottom=0.15, top=0.9)
-        ax.plot(matplotlib.dates.date2num(times), masked_power_data, 'k')
+        # ax.plot(matplotlib.dates.date2num(times), masked_power_data, 'k')
 
     plt.savefig('power_plot.png', dpi=100)
 
