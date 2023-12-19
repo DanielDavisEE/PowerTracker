@@ -5,32 +5,26 @@ import matplotlib
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 
 from file_utils import *
-from waveshare_epd.epd7in5_V2 import EPD
 from pathlib import Path
 
-MINS_IN_HOUR = 60  # mins
+try:
+    from waveshare_epd.epd7in5_V2 import EPD_WIDTH, EPD_HEIGHT
+except:
+    EPD_WIDTH = 800
+    EPD_HEIGHT = 480
+
+SECS_IN_MIN = 60
+MINS_IN_HOUR = 60
 TIMESTEP = 5  # mins
+HOURS = 12
 
 FONT = ImageFont.truetype('Humor-Sans.ttf', 38)
 
 V_MARGIN = 40
-SCREEN = EPD()
-latest_gen_data_tmp = {
-    'DateTime': '3/01/2021 11:46',
-    'NIWind': '88',
-    'NIHydro': '759',
-    'Geothermal': '921',
-    'Gas-Coal': '0',
-    'Gas': '375',
-    'Diesel-Oil': '0',
-    'Co-Gen': '157',
-    'SIWind': '3',
-    'SIHydro': '1880'
-}
-total_generation_tmp = sum(int(v.removesuffix(' MW')) for k, v in latest_gen_data_tmp.items() if k != 'DateTime')
 
 
 class BBox:
@@ -42,34 +36,26 @@ class BBox:
 
 
 def create_graph():
-    hours = 12
-    max_timesteps = (hours * MINS_IN_HOUR // TIMESTEP)
+    power_generation_df = []
+    latest_timestamp = None
+    with open('power_data/power_totals.csv', 'r') as infile:
+        reader = csv.reader(ReversedFile(infile))
+        for timestamp, *powers in reader:
+            if latest_timestamp is None:
+                latest_timestamp = timestamp
+            elif timestamp < latest_timestamp - HOURS * MINS_IN_HOUR * SECS_IN_MIN:
+                break
+
+            total_power = sum(int(value) if value != '' else 0 for value in powers)
+            power_generation_df.append((timestamp, total_power))
+
+    power_generation_df = pd.DataFrame(power_generation_df, columns=['timestamp', 'power'])
+    power_generation_df.sort_values(by='timestamp')
+
+    max_timesteps = (HOURS * MINS_IN_HOUR // TIMESTEP)
     with plt.xkcd(scale=0.4, length=200, randomness=50):
+        # Plot as continuous if gap between points is less than 10 minutes?
 
-        current_time = datetime.now()
-        data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'PowerData')
-        with open(os.path.join(data_path, 'Total.csv'), 'r') as infile:
-            reader = csv.reader(ReversedFile(infile))
-            power_data = []
-            offset = 0
-            latest_time = None
-            for _ in range(max_timesteps):
-                try:
-                    new_data_point = reader.__next__()
-                except StopIteration:
-                    new_data_point = [''] * 8
-                else:
-                    if latest_time is None:
-                        latest_time = datetime.strptime(new_data_point[0], '%d %b %Y %H:%M')
-
-                try:
-                    power = int(new_data_point[1])
-                except ValueError:
-                    power = -1
-                finally:
-                    power_data.append(power)
-
-        power_data.reverse()
         times = [latest_time - timedelta(minutes=i) for i in range((max_timesteps - 1) * TIMESTEP, -1, -TIMESTEP)]
         masked_power_data = np.ma.masked_where(np.array(power_data) < 0, power_data, copy=True)
 
@@ -83,13 +69,12 @@ def create_graph():
         ax.set_ylabel('Power (MW)')
         ax.set_xlabel('')
 
+        # TODO: Don't hardcode limits
         ax.set_ylim([2500, 6000])
         ax.set_xlim(matplotlib.dates.date2num((times[0], times[-1])))
 
         plt.subplots_adjust(left=0.23, bottom=0.15, top=0.9)
-        # times, average_power = AnalyseMonth.create_timeseries(datetime.strptime(new_data_point[0], '%d %b %Y %H:%M').date())
         ax.plot(matplotlib.dates.date2num(times), masked_power_data, 'k')
-        # ax.plot(times, average_power)
 
     plt.savefig('power_plot.png', dpi=100)
 
@@ -99,16 +84,21 @@ def create_image():
     graph_image = Image.open("power_plot.png")
     graph_rect = BBox(graph_image)
 
-    main_image = Image.new('1', (SCREEN.width, SCREEN.height), 255)
+    main_image = Image.new('1', (EPD_WIDTH, EPD_HEIGHT), 255)
     main_image.paste(graph_image, (0, V_MARGIN))
     draw_main_image = ImageDraw.Draw(main_image)
+
+    with open('metadata/gen_sources.txt', 'r', encoding='utf-8') as infile:
+        csv_fieldnames = infile.read().splitlines()
+        with open('power_data/power_totals.csv', 'r') as infile:
+            reader = csv.DictReader(ReversedFile(infile), csv_fieldnames)
 
     icons_path = Path(__file__) / 'icons'
     for i, img_name in enumerate(sorted(os.listdir(icons_path))):
 
         # Generation Block
-        coords = (int(((SCREEN.width - graph_rect.right) // 2) * (i // 4) + graph_rect.right),
-                  int(((SCREEN.height - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
+        coords = (int(((EPD_WIDTH - graph_rect.right) // 2) * (i // 4) + graph_rect.right),
+                  int(((EPD_HEIGHT - V_MARGIN * 2) // 4) * (i % 4)) + V_MARGIN)
 
         # Generation Icon
         icon_image = Image.open(os.path.join(icons_path, img_name))
@@ -132,6 +122,5 @@ def create_image():
 
 
 if __name__ == "__main__":
-    print(Path(__file__) / 'icons')
-    # create_graph()
+    create_graph()
     # plt.show()

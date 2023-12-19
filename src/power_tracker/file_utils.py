@@ -99,3 +99,11 @@ class ReversedFile(object):
 
         """
         return [x for x in self]
+
+
+def create_file(path):
+    try:
+        with open(path, 'x', encoding='utf-8') as infile:
+            pass
+    except FileExistsError:
+        pass

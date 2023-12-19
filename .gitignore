@@ -163,3 +163,4 @@ cython_debug/
 **/metadata/*
 **/gui_image.png
 **/power_plot.png
+**/power_totals.csv
